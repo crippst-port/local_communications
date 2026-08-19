@@ -123,12 +123,14 @@ $string['report_trend_flat'] = 'Holding steady: the average score of the last {$
 $string['report_trend_nodata'] = 'Not enough feedback yet to show a trend - needs at least {$a} responses.';
 $string['report_viewpage'] = 'View page';
 $string['report_viewfeedback'] = 'View feedback';
-$string['report_heading_bycategory'] = 'Scores by course category';
+$string['report_heading_categoryperformance'] = 'Category performance';
+$string['report_topperforming'] = 'Top performing';
+$string['report_lowscoring'] = 'Low feedback score';
+$string['report_viewall'] = 'View all {$a} categories';
 $string['report_col_coursecategory'] = 'Category';
 $string['report_filtercategory'] = 'Course category';
 $string['report_allcategories'] = 'All categories';
 $string['report_topic_unspecified'] = 'Not specified';
-$string['report_breakdown_showmore'] = 'Show {$a} more';
 $string['report_filtertopic'] = 'Topic';
 $string['report_alltopics'] = 'All topics';
 

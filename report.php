@@ -45,6 +45,8 @@ $download = optional_param('download', '', PARAM_ALPHA);
 $tier = optional_param('tier', '', PARAM_ALPHA);
 $trend = optional_param('trend', '', PARAM_ALPHA);
 $category = optional_param('category', 0, PARAM_INT);
+$catsort = optional_param('catsort', 'score', PARAM_ALPHA);
+$catdir = optional_param('catdir', 'asc', PARAM_ALPHA);
 $reset = optional_param('reset', 0, PARAM_BOOL);
 
 if ($reset) {
@@ -120,23 +122,20 @@ if (!$table->is_downloading()) {
             ]
         );
 
-        // Which department (course category) is scoring worst - worst-scoring first, with
-        // anything beyond report_helper::DEFAULT_LIMIT collapsed behind "show more" so a
-        // site with many categories doesn't turn this into an endless page. Sits as a card
-        // in the same responsive grid as the stat cards above, rather than a full-width
-        // block, so it doesn't dominate the page on its own.
+        // Which department (course category) is scoring best/worst - a fixed best-3/
+        // worst-5 glance by default, with the full list (sortable) tucked behind a
+        // <details> disclosure so a site with many categories doesn't turn this into an
+        // endless page. Sits as a card in the same responsive grid as the stat cards
+        // above, rather than a full-width block, so it doesn't dominate the page on its own.
         $categorybreakdown = stats::get_category_breakdown();
         foreach ($categorybreakdown as $row) {
             $row->label = format_string($row->categoryname);
         }
-        $categorybreakdownhtml = report_helper::render_score_breakdown(
-            $categorybreakdown,
-            get_string('report_col_coursecategory', 'local_feedback')
-        );
-        if ($categorybreakdownhtml !== '') {
+        $categoryperformancehtml = report_helper::render_category_performance($categorybreakdown, $url, $catsort, $catdir);
+        if ($categoryperformancehtml !== '') {
             echo html_writer::div(
-                html_writer::div(get_string('report_heading_bycategory', 'local_feedback'), 'local-feedback__stat-card-title')
-                . $categorybreakdownhtml,
+                html_writer::div(get_string('report_heading_categoryperformance', 'local_feedback'), 'local-feedback__stat-card-title')
+                . $categoryperformancehtml,
                 'local-feedback__stat-card local-feedback__stat-card--breakdown'
             );
         }

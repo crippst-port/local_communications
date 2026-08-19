@@ -21,14 +21,12 @@ use local_feedback\table\courses_summary_table;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Renders the small "score per X" breakdown tables (by course category, by feedback
- * topic) shared by report.php and course_report.php.
- *
- * A real site can have many course categories or free-text topics - showing all of them
- * unconditionally would make the report page as long as the data is wide, defeating the
- * point of a glanceable summary. So only the worst-scoring {@see DEFAULT_LIMIT} rows are
- * shown outright; the rest sit behind a native <details> disclosure, which needs no JS
- * and keeps the full data one click away rather than truncated.
+ * Renders the "Category performance" card on the site-wide report - a glance at which
+ * course categories are scoring best/worst, without listing every category on the page
+ * itself the way an early version of this card did (unworkable on a site with many
+ * categories). The at-a-glance view is a fixed best-3/worst-5 split; the full list sits
+ * behind a native <details> disclosure, sortable by clicking a column header, so it's out
+ * of the way until wanted rather than always taking up page space.
  *
  * @package     local_feedback
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
@@ -36,71 +34,168 @@ defined('MOODLE_INTERNAL') || die();
  */
 class report_helper {
 
-    /** How many worst-scoring rows to show before collapsing the rest behind "show more". */
-    public const DEFAULT_LIMIT = 10;
+    /** How many best-scoring categories the compact view shows. */
+    protected const BEST_COUNT = 3;
+
+    /** How many worst-scoring categories the compact view shows. */
+    protected const WORST_COUNT = 5;
+
+    /** Sortable columns for the full table, mapped to how each is compared. */
+    protected const SORT_COLUMNS = ['category', 'total', 'score'];
 
     /**
-     * @param array<int, \stdClass> $rows Each needs ->label (already formatted/escaped for
-     *                                     output), ->totalcount and ->avgscore. Assumed
-     *                                     pre-sorted worst-first, as stats::get_category_
-     *                                     breakdown() and get_topic_breakdown() return.
-     * @param string $labelheader Column header for the label column (e.g. "Category").
-     * @param int $limit Rows to show before collapsing the rest behind "show more".
-     * @return string HTML, or '' if there's nothing worth a table for (0 or 1 rows -
-     *                 no comparison to make).
+     * @param array<int, \stdClass> $rows Each needs ->categoryid, ->label (already
+     *                                     formatted/escaped for output), ->totalcount and
+     *                                     ->avgscore. Assumed pre-sorted worst-first, as
+     *                                     stats::get_category_breakdown() returns.
+     * @param \moodle_url $baseurl Current page URL (with any other filters already
+     *                             applied) to build the column-sort links against.
+     * @param string $sort Which column the full table is sorted by - 'category', 'total'
+     *                      or 'score'; anything else falls back to 'score'.
+     * @param string $dir 'asc' or 'desc'; anything else falls back to 'asc'.
+     * @return string HTML, or '' if there's nothing worth showing (0 or 1 rows - no
+     *                 comparison to make).
      */
-    public static function render_score_breakdown(
+    public static function render_category_performance(
         array $rows,
-        string $labelheader,
-        int $limit = self::DEFAULT_LIMIT
+        \moodle_url $baseurl,
+        string $sort,
+        string $dir
     ): string {
         if (count($rows) < 2) {
             return '';
         }
 
-        $visible = array_slice($rows, 0, $limit);
-        $rest = array_slice($rows, $limit);
+        if (!in_array($sort, self::SORT_COLUMNS, true)) {
+            $sort = 'score';
+        }
+        $dir = $dir === 'desc' ? 'desc' : 'asc';
 
-        $out = self::build_table($visible, $labelheader);
+        return self::build_compact_lists($rows) . self::build_full_table($rows, $baseurl, $sort, $dir);
+    }
 
-        if ($rest) {
-            $summary = \html_writer::tag(
-                'summary',
-                get_string('report_breakdown_showmore', 'local_feedback', count($rest))
-            );
-            $out .= \html_writer::tag(
-                'details',
-                $summary . self::build_table($rest, $labelheader),
-                ['class' => 'local-feedback__breakdown-more']
-            );
+    /**
+     * The always-visible part of the card: best {@see BEST_COUNT} and worst
+     * {@see WORST_COUNT}, each category appearing in at most one list (a site with few
+     * enough categories that the two would otherwise overlap just shows fewer "best").
+     *
+     * @param array<int, \stdClass> $rows Worst-first.
+     * @return string
+     */
+    protected static function build_compact_lists(array $rows): string {
+        $worst = array_slice($rows, 0, self::WORST_COUNT);
+        $usedids = array_map(fn($row) => $row->categoryid, $worst);
+
+        $best = [];
+        foreach (array_reverse($rows) as $row) {
+            if (count($best) >= self::BEST_COUNT) {
+                break;
+            }
+            if (!in_array($row->categoryid, $usedids, true)) {
+                $best[] = $row;
+            }
         }
 
-        return $out;
+        $out = '';
+        if ($best) {
+            $out .= self::build_mini_list($best, get_string('report_topperforming', 'local_feedback'), 'best');
+        }
+        if ($worst) {
+            $out .= self::build_mini_list($worst, get_string('report_lowscoring', 'local_feedback'), 'worst');
+        }
+
+        return \html_writer::div($out, 'local-feedback__category-lists');
     }
 
     /**
      * @param array<int, \stdClass> $rows
-     * @param string $labelheader
+     * @param string $heading
+     * @param string $modifier BEM-style modifier for styling hooks ('best'/'worst').
      * @return string
      */
-    protected static function build_table(array $rows, string $labelheader): string {
-        $table = new \html_table();
-        $table->attributes['class'] = 'generaltable local-feedback__breakdown';
-        $table->head = [
-            $labelheader,
-            get_string('report_col_total', 'local_feedback'),
-            get_string('report_col_avgscore', 'local_feedback'),
-        ];
-
+    protected static function build_mini_list(array $rows, string $heading, string $modifier): string {
+        $items = '';
         foreach ($rows as $row) {
-            $score = (float) $row->avgscore;
-            $scorehtml = \html_writer::span(
-                number_format($score, 1) . ' / ' . max(courses_summary_table::SCORE_POINTS),
-                'local-feedback__score local-feedback__score--' . courses_summary_table::score_tier($score)
+            $items .= \html_writer::tag(
+                'li',
+                \html_writer::span($row->label, 'local-feedback__category-list-label') . self::score_pill($row)
             );
-            $table->data[] = [$row->label, $row->totalcount, $scorehtml];
         }
 
-        return \html_writer::table($table);
+        return \html_writer::div(
+            \html_writer::div($heading, 'local-feedback__category-list-heading')
+            . \html_writer::tag('ul', $items, ['class' => 'local-feedback__category-list']),
+            'local-feedback__category-list-group local-feedback__category-list-group--' . $modifier
+        );
+    }
+
+    /**
+     * The full list, sorted by whichever column was clicked, tucked behind a <details> so
+     * it doesn't compete with the compact view for space until an admin wants it.
+     *
+     * @param array<int, \stdClass> $rows
+     * @param \moodle_url $baseurl
+     * @param string $sort Already validated against {@see SORT_COLUMNS}.
+     * @param string $dir Already validated as 'asc' or 'desc'.
+     * @return string
+     */
+    protected static function build_full_table(array $rows, \moodle_url $baseurl, string $sort, string $dir): string {
+        $columns = [
+            'category' => get_string('report_col_coursecategory', 'local_feedback'),
+            'total' => get_string('report_col_total', 'local_feedback'),
+            'score' => get_string('report_col_avgscore', 'local_feedback'),
+        ];
+
+        $sorted = $rows;
+        usort($sorted, function ($a, $b) use ($sort) {
+            return match ($sort) {
+                'category' => $a->label <=> $b->label,
+                'total' => $a->totalcount <=> $b->totalcount,
+                default => $a->avgscore <=> $b->avgscore,
+            };
+        });
+        if ($dir === 'desc') {
+            $sorted = array_reverse($sorted);
+        }
+
+        $table = new \html_table();
+        $table->attributes['class'] = 'generaltable local-feedback__breakdown';
+        $table->head = [];
+        foreach ($columns as $key => $label) {
+            $newdir = ($sort === $key && $dir === 'asc') ? 'desc' : 'asc';
+            $sorturl = new \moodle_url($baseurl, ['catsort' => $key, 'catdir' => $newdir]);
+            $arrow = '';
+            if ($sort === $key) {
+                $arrow = ' ' . ($dir === 'asc' ? '▲' : '▼');
+            }
+            $table->head[] = \html_writer::link($sorturl, $label . $arrow);
+        }
+
+        foreach ($sorted as $row) {
+            $table->data[] = [$row->label, $row->totalcount, self::score_pill($row)];
+        }
+
+        // A sort click is a full page reload - without forcing this open on a non-default
+        // sort, the admin's click would re-collapse the very table they just sorted.
+        $attributes = ['class' => 'local-feedback__breakdown-more'];
+        if ($sort !== 'score' || $dir !== 'asc') {
+            $attributes['open'] = 'open';
+        }
+
+        $summary = \html_writer::tag('summary', get_string('report_viewall', 'local_feedback', count($rows)));
+
+        return \html_writer::tag('details', $summary . \html_writer::table($table), $attributes);
+    }
+
+    /**
+     * @param \stdClass $row
+     * @return string
+     */
+    protected static function score_pill(\stdClass $row): string {
+        $score = (float) $row->avgscore;
+        return \html_writer::span(
+            number_format($score, 1) . ' / ' . max(courses_summary_table::SCORE_POINTS),
+            'local-feedback__score local-feedback__score--' . courses_summary_table::score_tier($score)
+        );
     }
 }
