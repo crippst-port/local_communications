@@ -1,0 +1,264 @@
+/* Floating feedback trigger button. */
+.local-feedback__fab {
+    position: fixed;
+    right: .85rem;
+    bottom: 1rem;
+    z-index: 1040;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .6rem 1rem;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #2f6fed 0%, #7b4fe0 100%);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 .75rem 2rem rgba(47, 111, 237, .35);
+    transition: transform .2s ease, box-shadow .2s ease;
+    cursor: pointer;
+}
+
+.local-feedback__fab:hover,
+.local-feedback__fab:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 1rem 2.5rem rgba(47, 111, 237, .45);
+    color: #fff;
+    outline: none;
+}
+
+.local-feedback__fab-icon {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+/* Modal contents. */
+.local-feedback__modal {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.local-feedback__sentiments {
+    display: flex;
+    justify-content: space-between;
+    gap: .75rem;
+}
+
+.local-feedback__sentiment {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .35rem;
+    padding: 1rem .5rem;
+    border: 1px solid #dcdfe6;
+    border-radius: .75rem;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color .15s ease, transform .15s ease, background .15s ease;
+}
+
+.local-feedback__sentiment:hover,
+.local-feedback__sentiment:focus {
+    border-color: #2f6fed;
+    background: #f3f6ff;
+    transform: translateY(-2px);
+    outline: none;
+}
+
+.local-feedback__sentiment-icon {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.local-feedback__sentiment-label {
+    font-size: .85rem;
+    font-weight: 600;
+}
+
+.local-feedback__prompt {
+    font-weight: 600;
+    margin-bottom: .25rem;
+}
+
+.local-feedback__categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+}
+
+.local-feedback__category {
+    flex: 1 1 auto;
+    min-width: 8rem;
+    padding: .65rem .75rem;
+    border: 1px solid #dcdfe6;
+    border-radius: .6rem;
+    background: #fff;
+    font-weight: 600;
+    font-size: .9rem;
+    cursor: pointer;
+    transition: border-color .15s ease, background .15s ease, transform .15s ease;
+}
+
+.local-feedback__category:hover,
+.local-feedback__category:focus {
+    border-color: #2f6fed;
+    background: #f3f6ff;
+    transform: translateY(-2px);
+    outline: none;
+}
+
+.local-feedback__category-other {
+    margin-top: .5rem;
+}
+
+.local-feedback__input {
+    width: 100%;
+    border: 1px solid #dcdfe6;
+    border-radius: .5rem;
+    padding: .55rem .65rem;
+}
+
+.local-feedback__textarea {
+    width: 100%;
+    resize: vertical;
+    border: 1px solid #dcdfe6;
+    border-radius: .5rem;
+    padding: .6rem;
+}
+
+.local-feedback__error {
+    color: #b3261e;
+    font-size: .875rem;
+}
+
+.local-feedback__anonymous {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+/* Step-scoped action buttons rendered into the modal's own footer region
+   (see templates/modal_footer.mustache), rather than inline in the body,
+   for clearer spacing between content and actions. */
+.local-feedback__footer-step {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: .5rem;
+    width: 100%;
+}
+
+.local-feedback__thankyou {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.local-feedback__thankyou-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: .35rem;
+}
+
+/* Admin report page. */
+.local-feedback__stats {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+}
+
+.local-feedback__stat-value {
+    position: relative;
+    min-width: 7rem;
+    padding: .75rem 1rem 1.5rem;
+    border: 1px solid #dcdfe6;
+    border-radius: .5rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.local-feedback__stat-value::after {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: .35rem;
+    font-size: .75rem;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.local-feedback__stat-value--bad {
+    border-color: #f1b3ae;
+    background: #fbe4e2;
+    color: #a3241b;
+}
+
+.local-feedback__stat-value--bad::after {
+    color: #a3241b;
+    opacity: .75;
+}
+
+.local-feedback__score {
+    display: inline-block;
+    padding: .2rem .55rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: .9rem;
+    white-space: nowrap;
+}
+
+.local-feedback__score--good {
+    background: #e3f6e8;
+    color: #1e7b3c;
+}
+
+.local-feedback__score--okay {
+    background: #fff3d6;
+    color: #8a6100;
+}
+
+.local-feedback__score--bad {
+    background: #fbe4e2;
+    color: #a3241b;
+}
+
+.local-feedback__score-explain {
+    color: #6b7280;
+    font-size: .8rem;
+    margin: .5rem 0 1rem;
+}
+
+.local-feedback__filters {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.local-feedback__trend {
+    display: inline-block;
+    font-size: .9rem;
+    font-weight: 700;
+}
+
+.local-feedback__trend--up {
+    color: #1e7b3c;
+}
+
+.local-feedback__trend--down {
+    color: #a3241b;
+}
+
+.local-feedback__trend--none {
+    color: #9ca3af;
+}
+
+.local-feedback__report-text {
+    max-width: 28rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+}

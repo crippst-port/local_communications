@@ -1,0 +1,40 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_feedback/modal_footer
+
+    Step-scoped action buttons for the feedback modal, rendered into the modal's
+    dedicated footer region rather than inline in the body, for clearer spacing
+    between content and actions. Each [data-step] group here is shown/hidden in
+    lockstep with the matching body step by local_feedback/app.js. Step 1 (the
+    sentiment pick) has no footer group - picking a face advances the modal by
+    itself, so the footer stays empty there.
+}}
+<div class="local-feedback__footer-step" data-step="2" hidden="hidden">
+    <button type="button" class="btn btn-secondary" data-action="category-back"></button>
+    <button type="button" class="btn btn-secondary" data-action="category-skip"></button>
+    <button type="button" class="btn btn-primary" data-action="category-other-continue" hidden="hidden" disabled="disabled"></button>
+</div>
+
+<div class="local-feedback__footer-step" data-step="3" hidden="hidden">
+    <button type="button" class="btn btn-secondary" data-action="back"></button>
+    <button type="button" class="btn btn-primary" data-action="submit"></button>
+</div>
+
+<div class="local-feedback__footer-step" data-step="4" hidden="hidden">
+    <button type="button" class="btn btn-primary" data-action="close"></button>
+</div>

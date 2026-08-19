@@ -1,0 +1,84 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_feedback/modal_body
+
+    The four-step body of the course feedback modal: choose a sentiment, optionally
+    say which area it's about (from the admin-configured list, or free text via
+    "Other"), write a comment, then a confirmation screen. Step navigation buttons
+    live in local_feedback/modal_footer, not here - see that template. Steps are
+    shown/hidden together (body + footer) by local_feedback/app.js.
+
+    Context variables:
+    * categories - array of {value} - the admin-configured area buttons to render
+}}
+<div class="local-feedback__modal">
+
+    <div class="local-feedback__step" data-step="1">
+        <div class="local-feedback__sentiments">
+            <button type="button" class="local-feedback__sentiment" data-sentiment="happy">
+                <span class="local-feedback__sentiment-icon" aria-hidden="true">&#128522;</span>
+                <span class="local-feedback__sentiment-label" data-role="label-happy"></span>
+            </button>
+            <button type="button" class="local-feedback__sentiment" data-sentiment="neutral">
+                <span class="local-feedback__sentiment-icon" aria-hidden="true">&#128528;</span>
+                <span class="local-feedback__sentiment-label" data-role="label-neutral"></span>
+            </button>
+            <button type="button" class="local-feedback__sentiment" data-sentiment="sad">
+                <span class="local-feedback__sentiment-icon" aria-hidden="true">&#128542;</span>
+                <span class="local-feedback__sentiment-label" data-role="label-sad"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="local-feedback__step" data-step="2" hidden="hidden">
+        <p class="local-feedback__prompt" data-role="category-heading"></p>
+        <div class="local-feedback__categories">
+            {{#categories}}
+            <button type="button" class="local-feedback__category" data-category="{{value}}">{{value}}</button>
+            {{/categories}}
+            <button type="button" class="local-feedback__category local-feedback__category--other" data-action="category-other">
+                <span data-role="category-label-other"></span>
+            </button>
+        </div>
+        <div class="local-feedback__category-other" data-role="category-other-wrap" hidden="hidden">
+            <input type="text" class="local-feedback__input" data-role="category-other-text" maxlength="255">
+        </div>
+    </div>
+
+    <div class="local-feedback__step" data-step="3" hidden="hidden">
+        <p class="local-feedback__prompt" data-role="prompt"></p>
+        <textarea
+            class="local-feedback__textarea"
+            data-role="feedbacktext"
+            rows="4"
+        ></textarea>
+        <div class="local-feedback__error" data-role="error" hidden="hidden"></div>
+        <div class="local-feedback__anonymous">
+            <input type="checkbox" id="local-feedback-anonymous" data-role="anonymous">
+            <label for="local-feedback-anonymous" data-role="anonymous-label"></label>
+        </div>
+    </div>
+
+    <div class="local-feedback__step" data-step="4" hidden="hidden">
+        <div class="local-feedback__thankyou">
+            <p class="local-feedback__thankyou-title" data-role="thankyou-title"></p>
+            <p class="local-feedback__thankyou-body" data-role="thankyou-body"></p>
+        </div>
+    </div>
+
+</div>
