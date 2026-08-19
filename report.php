@@ -33,20 +33,24 @@ require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once(__DIR__ . '/classes/table/courses_summary_table.php');
 require_once(__DIR__ . '/classes/local/stats.php');
+require_once(__DIR__ . '/classes/local/report_helper.php');
 
 use local_feedback\table\courses_summary_table;
 use local_feedback\local\stats;
+use local_feedback\local\report_helper;
 
 admin_externalpage_setup('local_feedback_report');
 
 $download = optional_param('download', '', PARAM_ALPHA);
 $tier = optional_param('tier', '', PARAM_ALPHA);
 $trend = optional_param('trend', '', PARAM_ALPHA);
+$category = optional_param('category', 0, PARAM_INT);
 $reset = optional_param('reset', 0, PARAM_BOOL);
 
 if ($reset) {
     $tier = '';
     $trend = '';
+    $category = 0;
 }
 
 $urlparams = [];
@@ -56,9 +60,12 @@ if ($tier !== '') {
 if ($trend !== '') {
     $urlparams['trend'] = $trend;
 }
+if ($category) {
+    $urlparams['category'] = $category;
+}
 $url = new moodle_url('/local/feedback/report.php', $urlparams);
 
-$table = new courses_summary_table('local-feedback-courses-summary', $url, $download !== '', $tier, $trend);
+$table = new courses_summary_table('local-feedback-courses-summary', $url, $download !== '', $tier, $trend, $category);
 $table->is_downloading($download, 'course_feedback_summary', get_string('reportheading_sitewide', 'local_feedback'));
 $table->show_download_buttons_at([TABLE_P_TOP]);
 
@@ -81,6 +88,10 @@ foreach ($counts as $row) {
 }
 
 if (!$table->is_downloading()) {
+    if ($total > 0) {
+        echo html_writer::div(get_string('report_score_explain', 'local_feedback'), 'local-feedback__score-explain');
+    }
+
     echo html_writer::start_div('local-feedback__stats');
     echo html_writer::div($total, 'local-feedback__stat-value', ['data-label' => get_string('report_stat_total', 'local_feedback')]);
     if ($total > 0) {
@@ -108,14 +119,33 @@ if (!$table->is_downloading()) {
                 'title' => get_string('report_needsattention_explain', 'local_feedback'),
             ]
         );
+
+        // Which department (course category) is scoring worst - worst-scoring first, with
+        // anything beyond report_helper::DEFAULT_LIMIT collapsed behind "show more" so a
+        // site with many categories doesn't turn this into an endless page. Sits as a card
+        // in the same responsive grid as the stat cards above, rather than a full-width
+        // block, so it doesn't dominate the page on its own.
+        $categorybreakdown = stats::get_category_breakdown();
+        foreach ($categorybreakdown as $row) {
+            $row->label = format_string($row->categoryname);
+        }
+        $categorybreakdownhtml = report_helper::render_score_breakdown(
+            $categorybreakdown,
+            get_string('report_col_coursecategory', 'local_feedback')
+        );
+        if ($categorybreakdownhtml !== '') {
+            echo html_writer::div(
+                html_writer::div(get_string('report_heading_bycategory', 'local_feedback'), 'local-feedback__stat-card-title')
+                . $categorybreakdownhtml,
+                'local-feedback__stat-card local-feedback__stat-card--breakdown'
+            );
+        }
     }
     echo html_writer::end_div();
 
     if ($total === 0) {
         echo $OUTPUT->notification(get_string('report_nofeedback', 'local_feedback'), 'info');
     } else {
-        echo html_writer::div(get_string('report_score_explain', 'local_feedback'), 'local-feedback__score-explain');
-
         // Filter the courses table below by score tier - "needs attention" vs "good" etc.
         echo html_writer::start_tag('form', ['method' => 'get', 'class' => 'local-feedback__filters']);
 
@@ -141,6 +171,16 @@ if (!$table->is_downloading()) {
             'down' => get_string('report_trendoption_down', 'local_feedback'),
         ];
         echo html_writer::select($trendoptions, 'trend', $trend, null, ['id' => 'local-feedback-filter-trend']);
+
+        echo html_writer::start_tag('label', ['for' => 'local-feedback-filter-category']);
+        echo get_string('report_filtercategory', 'local_feedback');
+        echo html_writer::end_tag('label');
+
+        $categoryoptions = [0 => get_string('report_allcategories', 'local_feedback')];
+        foreach ($categorybreakdown as $row) {
+            $categoryoptions[$row->categoryid] = $row->label;
+        }
+        echo html_writer::select($categoryoptions, 'category', $category, null, ['id' => 'local-feedback-filter-category']);
 
         echo html_writer::empty_tag('input', [
             'type' => 'submit',

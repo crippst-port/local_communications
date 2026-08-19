@@ -87,13 +87,16 @@ class courses_summary_table extends \table_sql {
      *                     'good'), '' for all courses.
      * @param string $trendfilter Restrict to courses trending this way ('up' or 'down',
      *                            matching trend_direction()'s return value), '' for all.
+     * @param int $categoryfilter Restrict to courses in this Moodle course category
+     *                            (course.category), 0 for all courses.
      */
     public function __construct(
         $uniqueid,
         \moodle_url $baseurl,
         bool $downloading = false,
         string $tier = '',
-        string $trendfilter = ''
+        string $trendfilter = '',
+        int $categoryfilter = 0
     ) {
         parent::__construct($uniqueid);
 
@@ -178,6 +181,14 @@ class courses_summary_table extends \table_sql {
                      FROM {local_feedback_submissions}) scoredsubmissions
                  GROUP BY courseid, coursename) coursestats) feedbacksummary";
 
+        // Only join out to {course} when actually filtering by category - a course
+        // deleted since it received feedback has no row there, and the unfiltered view
+        // still needs to show it (via the coursename/courseid denormalised onto each
+        // submission), same as everywhere else in this table.
+        if ($categoryfilter) {
+            $from .= ' JOIN {course} c ON c.id = feedbacksummary.courseid';
+        }
+
         $conditions = [];
         $params = [];
         $goodmin = max(self::SCORE_POINTS) - 1;
@@ -204,6 +215,10 @@ class courses_summary_table extends \table_sql {
             case 'down':
                 $conditions[] = 'trend = -1';
                 break;
+        }
+        if ($categoryfilter) {
+            $conditions[] = 'c.category = :coursecategory';
+            $params['coursecategory'] = $categoryfilter;
         }
         $where = $conditions ? implode(' AND ', $conditions) : '1=1';
 

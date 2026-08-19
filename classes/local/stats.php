@@ -68,4 +68,96 @@ class stats {
 
         return $tiers;
     }
+
+    /**
+     * Response counts and weighted average score per Moodle course category, worst-scoring
+     * first - the "which department needs the most attention" view for the top of the
+     * site-wide report.
+     *
+     * Joins live to {course}/{course_categories}, unlike the rest of this report which
+     * reads the courseid/coursename denormalised onto each submission - so a course
+     * deleted since it received feedback (no longer having a category to report against)
+     * drops out of this breakdown even though it still appears in the main courses table.
+     * A course that has since moved category is counted under its current one.
+     *
+     * @return array<int, \stdClass> Keyed by categoryid, each with categoryname,
+     *                                happycount, neutralcount, sadcount, totalcount, avgscore.
+     */
+    public static function get_category_breakdown(): array {
+        global $DB;
+
+        $points = courses_summary_table::SCORE_POINTS;
+        $happy = $points['happy'];
+        $neutral = $points['neutral'];
+        $sad = $points['sad'];
+
+        $sql = "SELECT cc.id AS categoryid,
+                    cc.name AS categoryname,
+                    SUM(CASE WHEN s.sentiment = 'happy' THEN 1 ELSE 0 END) AS happycount,
+                    SUM(CASE WHEN s.sentiment = 'neutral' THEN 1 ELSE 0 END) AS neutralcount,
+                    SUM(CASE WHEN s.sentiment = 'sad' THEN 1 ELSE 0 END) AS sadcount,
+                    COUNT(*) AS totalcount,
+                    (SUM(CASE
+                        WHEN s.sentiment = 'happy' THEN $happy
+                        WHEN s.sentiment = 'neutral' THEN $neutral
+                        WHEN s.sentiment = 'sad' THEN $sad
+                        ELSE 0
+                    END) * 1.0) / COUNT(*) AS avgscore
+                 FROM {local_feedback_submissions} s
+                 JOIN {course} c ON c.id = s.courseid
+                 JOIN {course_categories} cc ON cc.id = c.category
+                GROUP BY cc.id, cc.name
+                ORDER BY avgscore ASC";
+
+        return array_values($DB->get_records_sql($sql));
+    }
+
+    /**
+     * Response counts and weighted average score per feedback topic (the submitter-chosen
+     * "category" column - e.g. Assessment, Content, or free text via "Other"), worst-scoring
+     * first. Restricting to one course is what makes this actionable - it's the "what's
+     * actually driving this course's score" view linked from each row of the site-wide
+     * report; called with no course to get the same breakdown site-wide instead.
+     *
+     * Topic text is exactly what was stored at submission time (admin-configured presets
+     * can be edited/removed later without touching past responses), so free text via
+     * "Other" naturally lands in its own one-off bucket rather than merging with anything.
+     *
+     * @param int $courseid Restrict to this course, 0 for all courses.
+     * @return array<int, \stdClass> Each with category (null if skipped), happycount,
+     *                                neutralcount, sadcount, totalcount, avgscore.
+     */
+    public static function get_topic_breakdown(int $courseid = 0): array {
+        global $DB;
+
+        $points = courses_summary_table::SCORE_POINTS;
+        $happy = $points['happy'];
+        $neutral = $points['neutral'];
+        $sad = $points['sad'];
+
+        $where = '1=1';
+        $params = [];
+        if ($courseid) {
+            $where = 'courseid = :courseid';
+            $params['courseid'] = $courseid;
+        }
+
+        $sql = "SELECT category,
+                    SUM(CASE WHEN sentiment = 'happy' THEN 1 ELSE 0 END) AS happycount,
+                    SUM(CASE WHEN sentiment = 'neutral' THEN 1 ELSE 0 END) AS neutralcount,
+                    SUM(CASE WHEN sentiment = 'sad' THEN 1 ELSE 0 END) AS sadcount,
+                    COUNT(*) AS totalcount,
+                    (SUM(CASE
+                        WHEN sentiment = 'happy' THEN $happy
+                        WHEN sentiment = 'neutral' THEN $neutral
+                        WHEN sentiment = 'sad' THEN $sad
+                        ELSE 0
+                    END) * 1.0) / COUNT(*) AS avgscore
+                 FROM {local_feedback_submissions}
+                WHERE $where
+                GROUP BY category
+                ORDER BY avgscore ASC";
+
+        return array_values($DB->get_records_sql($sql, $params));
+    }
 }

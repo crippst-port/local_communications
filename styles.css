@@ -160,23 +160,52 @@
     margin-bottom: .35rem;
 }
 
-/* Admin report page. */
+/* Admin report page. A fixed 2-column grid rather than auto-fit: with auto-fit, the 4 small
+   stat cards each stretched to fill an entire (1fr) track on wide screens - fine when
+   several similarly-sized cards share the row, but there's nothing to stop each one
+   ballooning out to fill the space. Two columns keeps them a sane 2x2 block regardless of
+   viewport width; the wider breakdown card spans both via "1 / -1", which - unlike
+   "span 2" - always resolves against the grid's actual column count rather than
+   potentially demanding an implicit extra one, so it's safe even at the 1-column mobile
+   breakpoint. */
 .local-feedback__stats {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr;
     gap: 1rem;
-    flex-wrap: wrap;
     margin-bottom: 1.25rem;
+}
+
+@media (min-width: 30rem) {
+    .local-feedback__stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .local-feedback__stat-value {
     position: relative;
-    min-width: 7rem;
     padding: .75rem 1rem 1.5rem;
     border: 1px solid #dcdfe6;
     border-radius: .5rem;
     font-size: 1.5rem;
     font-weight: 700;
     text-align: center;
+}
+
+.local-feedback__stat-card {
+    padding: .75rem 1rem;
+    border: 1px solid #dcdfe6;
+    border-radius: .5rem;
+}
+
+.local-feedback__stat-card-title {
+    font-size: .75rem;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: .5rem;
+}
+
+.local-feedback__stat-card--breakdown {
+    grid-column: 1 / -1;
 }
 
 .local-feedback__stat-value::after {
@@ -226,8 +255,6 @@
 }
 
 .local-feedback__score-explain {
-    color: #6b7280;
-    font-size: .8rem;
     margin: .5rem 0 1rem;
 }
 
@@ -255,6 +282,22 @@
 
 .local-feedback__trend--none {
     color: #9ca3af;
+}
+
+.local-feedback__breakdown {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.local-feedback__breakdown-more {
+    margin-top: .5rem;
+}
+
+.local-feedback__breakdown-more > summary {
+    cursor: pointer;
+    color: #4b5563;
+    font-size: .85rem;
+    margin-bottom: .5rem;
 }
 
 .local-feedback__report-text {

@@ -99,7 +99,7 @@ $string['report_col_feedback'] = 'Feedback';
 $string['report_col_page'] = 'Location';
 $string['report_col_total'] = 'Total';
 $string['report_col_trend'] = 'Trend';
-$string['report_score_explain'] = 'Score is a weighted average of each course\'s responses (Good = 5, Okay = 3, Not great = 1), out of 5 - not just a raw count - so courses with different numbers of responses can be compared fairly.';
+$string['report_score_explain'] = 'Score is a weighted average of each course\'s responses (Good = 5, Okay = 3, Not great = 1), out of 5 - not just a raw count - so courses with different numbers of responses can be compared fairly. This reflects feedback submitted by students only, not staff or other stakeholders.';
 $string['report_anonymous'] = 'Anonymous';
 $string['report_stat_total'] = 'Total responses';
 $string['report_stat_happy'] = 'Good';
@@ -123,6 +123,14 @@ $string['report_trend_flat'] = 'Holding steady: the average score of the last {$
 $string['report_trend_nodata'] = 'Not enough feedback yet to show a trend - needs at least {$a} responses.';
 $string['report_viewpage'] = 'View page';
 $string['report_viewfeedback'] = 'View feedback';
+$string['report_heading_bycategory'] = 'Scores by course category';
+$string['report_col_coursecategory'] = 'Category';
+$string['report_filtercategory'] = 'Course category';
+$string['report_allcategories'] = 'All categories';
+$string['report_topic_unspecified'] = 'Not specified';
+$string['report_breakdown_showmore'] = 'Show {$a} more';
+$string['report_filtertopic'] = 'Topic';
+$string['report_alltopics'] = 'All topics';
 
 // Privacy.
 $string['privacy:metadata:local_feedback_submissions'] = 'Feedback submitted by users about courses.';

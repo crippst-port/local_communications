@@ -30,8 +30,10 @@
 
 require(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/classes/table/submissions_table.php');
+require_once(__DIR__ . '/classes/local/stats.php');
 
 use local_feedback\table\submissions_table;
+use local_feedback\local\stats;
 
 $courseid = required_param('courseid', PARAM_INT);
 $course = get_course($courseid);
@@ -42,11 +44,13 @@ $context = context_course::instance($course->id);
 require_capability('local/feedback:viewreports', $context);
 
 $sentiment = optional_param('sentiment', '', PARAM_ALPHA);
+$topic = optional_param('topic', '', PARAM_RAW_TRIMMED);
 $reset = optional_param('reset', 0, PARAM_BOOL);
 $download = optional_param('download', '', PARAM_ALPHA);
 
 if ($reset) {
     $sentiment = '';
+    $topic = '';
 }
 
 $PAGE->set_context($context);
@@ -60,9 +64,12 @@ $urlparams = ['courseid' => $courseid];
 if ($sentiment !== '') {
     $urlparams['sentiment'] = $sentiment;
 }
+if ($topic !== '') {
+    $urlparams['topic'] = $topic;
+}
 $url = new moodle_url('/local/feedback/course_report.php', $urlparams);
 
-$table = new submissions_table('local-feedback-course-submissions', $url, $courseid, $sentiment, true);
+$table = new submissions_table('local-feedback-course-submissions', $url, $courseid, $sentiment, true, $topic);
 $table->is_downloading($download, 'course_feedback_' . $course->shortname, format_string($course->fullname));
 $table->show_download_buttons_at([TABLE_P_TOP]);
 
@@ -97,7 +104,10 @@ if (!$table->is_downloading()) {
     }
     echo html_writer::end_div();
 
-    // Filter form: sentiment only - the course itself is fixed by the page you're on.
+    // Filter form: sentiment and topic - the course itself is fixed by the page you're on.
+    // Topic options are the topics this course has actually been given feedback on (rather
+    // than the current admin-configured preset list), so a submission tagged with a preset
+    // that's since been edited/removed, or free text via "Other", is always filterable.
     echo html_writer::start_tag('form', ['method' => 'get', 'class' => 'local-feedback__filters']);
     echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'courseid', 'value' => $courseid]);
 
@@ -112,6 +122,20 @@ if (!$table->is_downloading()) {
         'sad' => get_string('sentiment_sad', 'local_feedback'),
     ];
     echo html_writer::select($sentimentoptions, 'sentiment', $sentiment, null, ['id' => 'local-feedback-filter-sentiment']);
+
+    echo html_writer::start_tag('label', ['for' => 'local-feedback-filter-topic']);
+    echo get_string('report_filtertopic', 'local_feedback');
+    echo html_writer::end_tag('label');
+
+    $topicoptions = ['' => get_string('report_alltopics', 'local_feedback')];
+    foreach (stats::get_topic_breakdown($courseid) as $row) {
+        if ($row->category !== null && $row->category !== '') {
+            $topicoptions[$row->category] = s($row->category);
+        } else {
+            $topicoptions[submissions_table::TOPIC_UNSPECIFIED] = get_string('report_topic_unspecified', 'local_feedback');
+        }
+    }
+    echo html_writer::select($topicoptions, 'topic', $topic, null, ['id' => 'local-feedback-filter-topic']);
 
     echo html_writer::empty_tag('input', [
         'type' => 'submit',

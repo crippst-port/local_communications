@@ -42,19 +42,30 @@ class submissions_table extends \table_sql {
     ];
 
     /**
+     * Sentinel passed as $topic to filter for responses with no topic set (category IS
+     * NULL or ''), distinct from '' which means "don't filter by topic at all" - chosen
+     * unlikely to collide with a real submitted topic, preset or free text via "Other".
+     */
+    public const TOPIC_UNSPECIFIED = '__unspecified__';
+
+    /**
      * @param string $uniqueid
      * @param \moodle_url $baseurl
      * @param int $courseid Restrict to this course, 0 for all courses.
      * @param string $sentiment Filter by sentiment, '' for all.
      * @param bool $hidecoursecolumn Omit the course column (used on the per-course report,
      *                                where every row is the same course).
+     * @param string $topic Filter by topic (the "category" column) - an exact match
+     *                       against submitted text, {@see TOPIC_UNSPECIFIED} for
+     *                       responses with none set, or '' for all.
      */
     public function __construct(
         $uniqueid,
         \moodle_url $baseurl,
         int $courseid = 0,
         string $sentiment = '',
-        bool $hidecoursecolumn = false
+        bool $hidecoursecolumn = false,
+        string $topic = ''
     ) {
         parent::__construct($uniqueid);
 
@@ -99,6 +110,13 @@ class submissions_table extends \table_sql {
         if ($sentiment !== '') {
             $where[] = 'sentiment = :sentiment';
             $params['sentiment'] = $sentiment;
+        }
+
+        if ($topic === self::TOPIC_UNSPECIFIED) {
+            $where[] = "(category IS NULL OR category = '')";
+        } else if ($topic !== '') {
+            $where[] = 'category = :topic';
+            $params['topic'] = $topic;
         }
 
         $this->set_sql(
