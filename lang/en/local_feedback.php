@@ -42,8 +42,8 @@ $string['trendwindow_setting_desc'] = 'How many of a course\'s most recent respo
 
 // Widget / trigger.
 $string['triggerlabel'] = 'Feedback';
-$string['triggeraria'] = 'Give feedback about this course';
-$string['modaltitle'] = 'How are you finding this course?';
+$string['triggeraria'] = 'Give feedback about how this module uses Moodle';
+$string['modaltitle'] = 'How well does this module use Moodle?';
 
 // Sentiments.
 $string['sentiment_happy'] = 'Good';
@@ -52,7 +52,7 @@ $string['sentiment_sad'] = 'Not great';
 
 // Step 2: area/category. The preset options themselves come from the
 // local_feedback/categories admin setting, not from strings here.
-$string['category_heading'] = 'What is the topic of your feedback?';
+$string['category_heading'] = 'What is your feedback about?';
 $string['category_other'] = 'Other';
 $string['category_other_placeholder'] = 'Tell us what area this is about...';
 $string['category_skip'] = "Not sure / skip";
