@@ -75,6 +75,13 @@ class courses_summary_table extends \table_sql {
     protected int $trendwindow;
 
     /**
+     * The campaign this table instance is scoped to - every report is scoped to exactly
+     * one campaign, so this is never 0 in practice, but col_actions() still needs it to
+     * build a working link into course_report.php (which requires a campaignid).
+     */
+    protected int $campaignid;
+
+    /**
      * @param string $uniqueid
      * @param \moodle_url $baseurl
      * @param bool $downloading Whether this instance is being built to serve a download
@@ -89,6 +96,14 @@ class courses_summary_table extends \table_sql {
      *                            matching trend_direction()'s return value), '' for all.
      * @param int $categoryfilter Restrict to courses in this Moodle course category
      *                            (course.category), 0 for all courses.
+     * @param int $campaignfilter Restrict every count/score/trend to responses collected
+     *                            under this campaign, 0 for all responses regardless of
+     *                            campaign.
+     * @param array $sentimentlabels Sentiment button labels to show instead of the site
+     *                                 defaults, keyed 'happy'/'neutral'/'sad' - a
+     *                                 campaign's own overrides, see
+     *                                 campaigns::get_sentiment_labels(). Missing keys
+     *                                 fall back to the site default individually.
      */
     public function __construct(
         $uniqueid,
@@ -96,16 +111,20 @@ class courses_summary_table extends \table_sql {
         bool $downloading = false,
         string $tier = '',
         string $trendfilter = '',
-        int $categoryfilter = 0
+        int $categoryfilter = 0,
+        int $campaignfilter = 0,
+        array $sentimentlabels = []
     ) {
         parent::__construct($uniqueid);
+
+        $this->campaignid = $campaignfilter;
 
         $columns = ['coursename', 'happycount', 'neutralcount', 'sadcount', 'totalcount', 'avgscore', 'trend'];
         $headers = [
             get_string('report_col_course', 'local_feedback'),
-            '😊 ' . get_string('sentiment_happy', 'local_feedback'),
-            '😐 ' . get_string('sentiment_neutral', 'local_feedback'),
-            '😞 ' . get_string('sentiment_sad', 'local_feedback'),
+            '😊 ' . ($sentimentlabels['happy'] ?? get_string('sentiment_happy', 'local_feedback')),
+            '😐 ' . ($sentimentlabels['neutral'] ?? get_string('sentiment_neutral', 'local_feedback')),
+            '😞 ' . ($sentimentlabels['sad'] ?? get_string('sentiment_sad', 'local_feedback')),
             get_string('report_col_total', 'local_feedback'),
             get_string('report_col_avgscore', 'local_feedback'),
             get_string('report_col_trend', 'local_feedback'),
@@ -148,6 +167,7 @@ class courses_summary_table extends \table_sql {
         $window = $this->trendwindow;
         $half = intdiv($window, 2);
         $threshold = self::TREND_THRESHOLD;
+        $submissionswhere = $campaignfilter ? ' WHERE campaignid = :campaignfilter' : '';
         $from = "(SELECT
                 courseid, coursename, happycount, neutralcount, sadcount, totalcount, avgscore,
                 recentavg, olderavg,
@@ -178,7 +198,7 @@ class courses_summary_table extends \table_sql {
                             ELSE 0
                         END AS score,
                         ROW_NUMBER() OVER (PARTITION BY courseid ORDER BY timecreated DESC) AS rn
-                     FROM {local_feedback_submissions}) scoredsubmissions
+                     FROM {local_feedback_submissions}$submissionswhere) scoredsubmissions
                  GROUP BY courseid, coursename) coursestats) feedbacksummary";
 
         // Only join out to {course} when actually filtering by category - a course
@@ -191,6 +211,9 @@ class courses_summary_table extends \table_sql {
 
         $conditions = [];
         $params = [];
+        if ($campaignfilter) {
+            $params['campaignfilter'] = $campaignfilter;
+        }
         $goodmin = max(self::SCORE_POINTS) - 1;
         $badmax = min(self::SCORE_POINTS) + 1;
         switch ($tier) {
@@ -312,17 +335,32 @@ class courses_summary_table extends \table_sql {
     }
 
     /**
-     * Arrow showing the course's recent direction of travel (see trend_direction()), sortable
+     * Arrow showing a row's recent direction of travel (see trend_direction()), sortable
      * like any other column since "trend" is a real numeric column in the underlying query.
-     * A dash means either the trend is flat, or the course doesn't have a full TREND_WINDOW
-     * of responses yet to judge one from - the tooltip spells out which.
+     * A dash means either the trend is flat, or there isn't a full $window of responses
+     * yet to judge one from - the tooltip spells out which. A thin wrapper around
+     * {@see render_trend_indicator()} so col_trend() doesn't have to pass $this->trendwindow
+     * around itself; that method is what report.php's flat (non-course-focused) dashboard
+     * calls directly for its own overall-trend stat card, since it has no per-course rows
+     * to render this into a table column for.
      *
      * @param \stdClass $row
      * @return string
      */
     public function col_trend($row): string {
-        if ((int) $row->totalcount < $this->trendwindow) {
-            $label = get_string('report_trend_nodata', 'local_feedback', $this->trendwindow);
+        return self::render_trend_indicator($row, $this->trendwindow);
+    }
+
+    /**
+     * @param \stdClass $row Needs ->totalcount, ->trend, ->recentavg, ->olderavg - the
+     *                        shape both this table's own query and
+     *                        stats::get_campaign_trend() produce.
+     * @param int $window The trend window that row was computed against (courses_summary_table::get_trend_window()).
+     * @return string
+     */
+    public static function render_trend_indicator(\stdClass $row, int $window): string {
+        if ((int) $row->totalcount < $window) {
+            $label = get_string('report_trend_nodata', 'local_feedback', $window);
             return \html_writer::span('–', 'local-feedback__trend local-feedback__trend--none', [
                 'title' => $label,
                 'aria-label' => $label,
@@ -330,7 +368,7 @@ class courses_summary_table extends \table_sql {
         }
 
         $a = (object) [
-            'n' => intdiv($this->trendwindow, 2),
+            'n' => intdiv($window, 2),
             'recentavg' => number_format((float) $row->recentavg, 1),
             'olderavg' => number_format((float) $row->olderavg, 1),
         ];
@@ -357,7 +395,9 @@ class courses_summary_table extends \table_sql {
      * @return string
      */
     public function col_actions($row): string {
-        $url = new \moodle_url('/local/feedback/course_report.php', ['courseid' => $row->courseid]);
+        $url = new \moodle_url(
+            '/local/feedback/course_report.php', ['courseid' => $row->courseid, 'campaignid' => $this->campaignid]
+        );
         return \html_writer::link($url, get_string('report_viewfeedback', 'local_feedback'), ['class' => 'btn btn-secondary btn-sm']);
     }
 }

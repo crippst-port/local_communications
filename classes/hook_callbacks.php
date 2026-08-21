@@ -18,6 +18,7 @@ namespace local_feedback;
 
 use core\hook\output\before_footer_html_generation;
 use core\hook\output\before_standard_head_html_generation;
+use local_feedback\local\campaigns;
 
 /**
  * Hook callback handlers for local_feedback.
@@ -49,8 +50,12 @@ class hook_callbacks {
             return null;
         }
 
-        // Feedback is scoped to a specific course, so only show it inside a real course.
-        if (empty($COURSE->id) || $COURSE->id == SITEID) {
+        // $COURSE always resolves to a real course object - the site/front-page course
+        // (id == SITEID) on pages not tied to a specific course, e.g. the dashboard or site
+        // home - so a campaign can legitimately target those via its key-area checkboxes.
+        // Actual page scoping is entirely campaigns::get_active_for_context()'s job below;
+        // this is only a safety net against $COURSE somehow not being set at all.
+        if (empty($COURSE->id)) {
             return null;
         }
 
@@ -60,6 +65,28 @@ class hook_callbacks {
         }
 
         return $context;
+    }
+
+    /**
+     * The campaign, if any, that applies to the current page/course/user - the widget
+     * only ever shows when one does. Delegates the actual targeting/scheduling decision
+     * to {@see campaigns::get_active_for_context()}, which ajax/submit.php also calls to
+     * re-validate at submission time, so the two can never disagree about what was live.
+     *
+     * @return \stdClass|null
+     */
+    protected static function get_matching_campaign(): ?\stdClass {
+        global $PAGE, $COURSE, $USER;
+
+        $context = self::get_display_context();
+        if (!$context) {
+            return null;
+        }
+
+        $course = $COURSE;
+        $cm = $PAGE->cm ?? null;
+
+        return campaigns::get_active_for_context($course, $cm, (string) $PAGE->pagetype, $USER);
     }
 
     /**
@@ -94,7 +121,7 @@ class hook_callbacks {
     public static function before_standard_head_html_generation(before_standard_head_html_generation $hook): void {
         global $PAGE;
 
-        if (!self::get_display_context()) {
+        if (!self::get_matching_campaign()) {
             return;
         }
 
@@ -109,21 +136,29 @@ class hook_callbacks {
     public static function before_footer_html_generation(before_footer_html_generation $hook): void {
         global $PAGE, $OUTPUT, $COURSE;
 
-        $context = self::get_display_context();
-        if (!$context) {
+        $campaign = self::get_matching_campaign();
+        if (!$campaign) {
             return;
         }
 
+        $context = \context_course::instance($COURSE->id);
         $cm = $PAGE->cm ?? null;
 
         $params = [
             'courseid' => (int) $COURSE->id,
             'cmid' => $cm ? (int) $cm->id : 0,
             'contextid' => (int) $context->id,
+            'campaignid' => (int) $campaign->id,
+            'campaignmodaltitle' => (string) ($campaign->modaltitle ?? ''),
+            'campaignintro' => (string) ($campaign->introtext ?? ''),
+            'skiptopicstep' => (bool) $campaign->skiptopicstep,
+            'labelhappy' => (string) ($campaign->labelhappy ?? ''),
+            'labelneutral' => (string) ($campaign->labelneutral ?? ''),
+            'labelsad' => (string) ($campaign->labelsad ?? ''),
             'pagetype' => (string) $PAGE->pagetype,
             'pageurl' => (string) $PAGE->url->out(false),
             'breadcrumb' => self::get_breadcrumb_trail(),
-            'categories' => \local_feedback\local\categories::get_list(),
+            'categories' => \local_feedback\local\categories::get_list_for_campaign($campaign),
         ];
 
         $PAGE->requires->strings_for_js([

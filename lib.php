@@ -25,14 +25,20 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Adds a link to this course's own feedback report to the course's navigation
- * (its Reports menu/dropdown). That page (course_report.php) is locked to this
- * course only - separate from the site-wide report under Site administration >
- * Reports, which shows every course.
+ * Adds a link to this course's feedback report(s) to the course's navigation (its
+ * Reports menu/dropdown) - but only when at least one course-focused campaign
+ * ({@see \local_feedback\local\campaigns::get_course_focused_for_course()}) is
+ * currently relevant to this course; a purely sitewide campaign (dashboard, site
+ * home, etc.) never appears here, only via its own campaign dashboard.
+ *
+ * One matching campaign links straight to that campaign's course-scoped report
+ * (course_report.php); more than one links to course_campaigns.php, a small index of
+ * just those campaigns for this course - every report is scoped to exactly one
+ * campaign, there is no pooled "every campaign" view any more.
  *
  * Checked at the COURSE context (not system) so that a role granting
  * local/feedback:viewreports only within this course still sees the link;
- * course_report.php re-checks the same course-level capability itself.
+ * course_report.php/course_campaigns.php re-check the same course-level capability.
  *
  * @param navigation_node $navigation
  * @param stdClass $course
@@ -43,7 +49,21 @@ function local_feedback_extend_navigation_course($navigation, $course, $context)
         return;
     }
 
-    $url = new moodle_url('/local/feedback/course_report.php', ['courseid' => $course->id]);
+    require_once(__DIR__ . '/classes/local/campaigns.php');
+    $matches = \local_feedback\local\campaigns::get_course_focused_for_course($course);
+    if (!$matches) {
+        return;
+    }
+
+    if (count($matches) === 1) {
+        $url = new moodle_url('/local/feedback/course_report.php', [
+            'courseid' => $course->id,
+            'campaignid' => $matches[0]->id,
+        ]);
+    } else {
+        $url = new moodle_url('/local/feedback/course_campaigns.php', ['courseid' => $course->id]);
+    }
+
     $navigation->add(
         get_string('reportheading', 'local_feedback'),
         $url,

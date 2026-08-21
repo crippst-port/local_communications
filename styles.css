@@ -1,7 +1,7 @@
 /* Floating feedback trigger button. */
 .local-feedback__fab {
     position: fixed;
-    right: .85rem;
+    left: .85rem;
     bottom: 1rem;
     z-index: 1040;
     display: flex;
@@ -36,6 +36,12 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+}
+
+.local-feedback__intro {
+    margin: 0 0 .75rem;
+    color: #4b5563;
+    font-size: .9rem;
 }
 
 .local-feedback__sentiments {
@@ -179,6 +185,22 @@
     .local-feedback__stats {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    /* The flat (non-course-focused) campaign report's stat row: a third column so the
+       trend card (see the --trend modifier below) can stand full-height on the left with
+       the other four cards filling a 2x2 block beside it, rather than trend being an odd
+       fifth card on its own row. Left at the default 2-column layout below 30rem, where
+       there's only room to stack everything in one column anyway. */
+    .local-feedback__stats--withtrend {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .local-feedback__stats--withtrend .local-feedback__stat-value--trend {
+        grid-row: span 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
 
 .local-feedback__stat-value {
@@ -195,6 +217,34 @@
     padding: .75rem 1rem;
     border: 1px solid #dcdfe6;
     border-radius: .5rem;
+}
+
+/* "What respondents saw" card at the top of a campaign's report - see
+   report_helper::render_widget_preview(). */
+.local-feedback__widgetpreview {
+    padding: .75rem 1rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid #dcdfe6;
+    border-radius: .5rem;
+    background: #f9fafb;
+}
+
+.local-feedback__widgetpreview-label {
+    font-size: .75rem;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: .35rem;
+}
+
+.local-feedback__widgetpreview-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.local-feedback__widgetpreview-intro {
+    margin: .35rem 0 0;
+    color: #374151;
+    font-size: .9rem;
 }
 
 .local-feedback__stat-card-title {

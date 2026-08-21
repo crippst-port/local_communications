@@ -67,6 +67,7 @@ define([
         return {
             courseid: params.courseid,
             cmid: params.cmid,
+            campaignid: params.campaignid,
             pagetype: params.pagetype,
             breadcrumb: params.breadcrumb || '',
             pageurl: window.location.href,
@@ -135,9 +136,9 @@ define([
         };
 
         var populateStrings = function(root, s) {
-            root.find('[data-role="label-happy"]').text(s.sentiment_happy);
-            root.find('[data-role="label-neutral"]').text(s.sentiment_neutral);
-            root.find('[data-role="label-sad"]').text(s.sentiment_sad);
+            root.find('[data-role="label-happy"]').text(params.labelhappy || s.sentiment_happy);
+            root.find('[data-role="label-neutral"]').text(params.labelneutral || s.sentiment_neutral);
+            root.find('[data-role="label-sad"]').text(params.labelsad || s.sentiment_sad);
             root.find('[data-role="category-heading"]').text(s.category_heading);
             root.find('[data-role="category-label-other"]').text(s.category_other);
             root.find('[data-role="category-other-text"]').attr('placeholder', s.category_other_placeholder);
@@ -225,17 +226,27 @@ define([
                 ).then(function(bodyData, footerData, s) {
                     return ModalFactory.create({
                         type: ModalFactory.types.DEFAULT,
-                        title: s.modaltitle,
+                        title: params.campaignmodaltitle || s.modaltitle,
                         body: bodyData.html,
                         footer: footerData.html,
                     }).then(function(modal) {
                         var root = modal.getRoot();
                         populateStrings(root, s);
 
+                        if (params.campaignintro) {
+                            root.find('[data-role="intro"]').text(params.campaignintro).removeAttr('hidden');
+                        }
+
                         root.on('click', '[data-sentiment]', function(e) {
                             state.sentiment = $(e.currentTarget).data('sentiment');
                             root.find('[data-role="prompt"]').text(promptFor(state.sentiment, s));
-                            showStep(root, '2');
+                            if (params.skiptopicstep) {
+                                state.category = null;
+                                state.categoryOther = false;
+                                goToComment(root);
+                            } else {
+                                showStep(root, '2');
+                            }
                         });
 
                         root.on('click', '[data-category]', function(e) {
@@ -276,7 +287,7 @@ define([
                         });
 
                         root.on('click', '[data-action="back"]', function() {
-                            showStep(root, '2');
+                            showStep(root, params.skiptopicstep ? '1' : '2');
                         });
 
                         root.on('click', '[data-action="submit"]', function() {

@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_feedback';
-$plugin->release = '0.1.0';
-$plugin->version = 2026081924;
+$plugin->release = '0.7.1';
+$plugin->version = 2026082106;
 $plugin->requires = 2024100708;
 $plugin->maturity = MATURITY_ALPHA;

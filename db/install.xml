@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/feedback/db" VERSION="20260819" COMMENT="XMLDB file for Moodle local/feedback"
+<XMLDB PATH="local/feedback/db" VERSION="20260821" COMMENT="XMLDB file for Moodle local/feedback"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -27,6 +27,8 @@
         <FIELD NAME="screenwidth" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="screenheight" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="lang" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="campaignid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 for submissions predating campaigns, or where the matched campaign expired between page load and submit"/>
+        <FIELD NAME="campaignname" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Denormalised snapshot of the campaign's name at submission time, so reports survive the campaign being renamed or deleted"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
@@ -37,6 +39,55 @@
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
         <INDEX NAME="sentiment" UNIQUE="false" FIELDS="sentiment"/>
         <INDEX NAME="timecreated" UNIQUE="false" FIELDS="timecreated"/>
+        <INDEX NAME="campaignid" UNIQUE="false" FIELDS="campaignid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_feedback_campaigns" COMMENT="Admin-configured feedback campaigns: scoped targeting and scheduling for the floating feedback widget">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="modaltitle" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Overrides the widget modal's title for this campaign; empty falls back to the site-wide default (the modaltitle language string)"/>
+        <FIELD NAME="introtext" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Short intro shown before the sentiment picker, explaining this campaign to the submitter; empty shows nothing"/>
+        <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="priority" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Lower value takes precedence when more than one campaign matches the same page/user"/>
+        <FIELD NAME="starttime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 = no lower bound"/>
+        <FIELD NAME="endtime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 = no upper bound"/>
+        <FIELD NAME="topics" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Newline list of this campaign's own feedback topic labels; empty = fall back to the site-wide local_feedback/categories setting"/>
+        <FIELD NAME="skiptopicstep" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Skip the topic/area step entirely, going straight from the sentiment buttons to the comment box"/>
+        <FIELD NAME="labelhappy" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Overrides the text shown under the happy sentiment face for this campaign; empty falls back to the sentiment_happy language string"/>
+        <FIELD NAME="labelneutral" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Overrides the text shown under the neutral sentiment face for this campaign; empty falls back to the sentiment_neutral language string"/>
+        <FIELD NAME="labelsad" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Overrides the text shown under the sad sentiment face for this campaign; empty falls back to the sentiment_sad language string"/>
+        <FIELD NAME="coursefocused" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether this campaign's report compares courses/categories and is linked from matching courses' own Reports menus (1), or gets a flat course-less dashboard and no course nav link (0)"/>
+        <FIELD NAME="responselimit" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="none" SEQUENCE="false" COMMENT="How often the same user may submit to this campaign: none, daily (once per calendar day) or once (once ever)"/>
+        <FIELD NAME="categoryids" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Newline list of Moodle course category ids to target (matches descendants too); empty = all categories"/>
+        <FIELD NAME="pagetypepatterns" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Newline list of $PAGE->pagetype patterns, * wildcard supported; empty = all pages"/>
+        <FIELD NAME="targetroles" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="CSV of role shortnames; empty = no role restriction"/>
+        <FIELD NAME="targetcohortid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 = no cohort restriction"/>
+        <FIELD NAME="targetuserids" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Newline list of user ids; empty = no restriction"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="enabled" UNIQUE="false" FIELDS="enabled"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_feedback_campaign_responses" COMMENT="Enforces a campaign's response limit: one row per submission attempt that was actually recorded, keyed by the real user id even when that submission itself was anonymous - never exposed in reports, purely an internal rate-limit ledger">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="campaignid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The course this response was made under; only used to scope the limit per-course for a course-focused campaign, ignored otherwise"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="campaignuser" UNIQUE="false" FIELDS="campaignid, userid"/>
       </INDEXES>
     </TABLE>
   </TABLES>

@@ -27,6 +27,35 @@
  * Custom code to be run on installing the plugin.
  */
 function xmldb_local_feedback_install() {
+    global $DB;
+
+    // Seed one always-on, all-scope campaign so the widget behaves exactly like a
+    // pre-campaign install out of the box - see the equivalent seeding in
+    // xmldb_local_feedback_upgrade() for sites upgrading from before campaigns existed.
+    $campaign = new stdClass();
+    $campaign->name = get_string('defaultcampaignname', 'local_feedback');
+    $campaign->modaltitle = null;
+    $campaign->introtext = null;
+    $campaign->enabled = 1;
+    $campaign->priority = 0;
+    $campaign->starttime = 0;
+    $campaign->endtime = 0;
+    $campaign->topics = null;
+    $campaign->skiptopicstep = 0;
+    $campaign->labelhappy = null;
+    $campaign->labelneutral = null;
+    $campaign->labelsad = null;
+    $campaign->coursefocused = 1;
+    $campaign->responselimit = 'none';
+    $campaign->categoryids = null;
+    $campaign->pagetypepatterns = null;
+    $campaign->targetroles = null;
+    $campaign->targetcohortid = 0;
+    $campaign->targetuserids = null;
+    $campaign->timecreated = time();
+    $campaign->timemodified = $campaign->timecreated;
+    $campaign->usermodified = 0;
+    $DB->insert_record('local_feedback_campaigns', $campaign);
 
     return true;
 }

@@ -26,8 +26,14 @@ use core_privacy\local\request\writer;
 /**
  * Privacy provider for local_feedback.
  *
- * Anonymous submissions (userid = 0) are, by design, not linked back to any
- * user and are therefore not returned or affected by any of these requests.
+ * Anonymous submissions (userid = 0) are, by design, not linked back to any user in
+ * local_feedback_submissions and are therefore not returned or affected by any request
+ * against that table. However, a campaign with a response limit needs to know a real
+ * user submitted even when they chose to stay anonymous - local_feedback_campaign_responses
+ * records exactly that (which user, which campaign, when - nothing about the response
+ * itself) purely to enforce the limit, and IS personal data: it's handled here at
+ * CONTEXT_SYSTEM, separately from the course-scoped submissions handling below, since
+ * it isn't tied to any single course.
  *
  * @package     local_feedback
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
@@ -62,6 +68,17 @@ class provider implements
             'privacy:metadata:local_feedback_submissions'
         );
 
+        $collection->add_database_table(
+            'local_feedback_campaign_responses',
+            [
+                'userid' => 'privacy:metadata:local_feedback_campaign_responses:userid',
+                'campaignid' => 'privacy:metadata:local_feedback_campaign_responses:campaignid',
+                'courseid' => 'privacy:metadata:local_feedback_campaign_responses:courseid',
+                'timecreated' => 'privacy:metadata:local_feedback_campaign_responses:timecreated',
+            ],
+            'privacy:metadata:local_feedback_campaign_responses'
+        );
+
         return $collection;
     }
 
@@ -72,6 +89,8 @@ class provider implements
      * @return contextlist
      */
     public static function get_contexts_for_userid(int $userid): contextlist {
+        global $DB;
+
         $contextlist = new contextlist();
 
         $sql = "SELECT ctx.id
@@ -84,6 +103,10 @@ class provider implements
             'userid' => $userid,
         ]);
 
+        if ($DB->record_exists('local_feedback_campaign_responses', ['userid' => $userid])) {
+            $contextlist->add_system_context();
+        }
+
         return $contextlist;
     }
 
@@ -95,15 +118,15 @@ class provider implements
     public static function get_users_in_context(userlist $userlist): void {
         $context = $userlist->get_context();
 
-        if ($context->contextlevel !== CONTEXT_COURSE) {
-            return;
+        if ($context->contextlevel === CONTEXT_COURSE) {
+            $sql = "SELECT userid
+                      FROM {local_feedback_submissions}
+                     WHERE courseid = :courseid AND anonymous = 0";
+
+            $userlist->add_from_sql('userid', $sql, ['courseid' => $context->instanceid]);
+        } else if ($context->contextlevel === CONTEXT_SYSTEM) {
+            $userlist->add_from_sql('userid', 'SELECT userid FROM {local_feedback_campaign_responses}', []);
         }
-
-        $sql = "SELECT userid
-                  FROM {local_feedback_submissions}
-                 WHERE courseid = :courseid AND anonymous = 0";
-
-        $userlist->add_from_sql('userid', $sql, ['courseid' => $context->instanceid]);
     }
 
     /**
@@ -117,38 +140,58 @@ class provider implements
         $user = $contextlist->get_user();
 
         foreach ($contextlist->get_contexts() as $context) {
-            if ($context->contextlevel !== CONTEXT_COURSE) {
-                continue;
+            if ($context->contextlevel === CONTEXT_COURSE) {
+                $records = $DB->get_records('local_feedback_submissions', [
+                    'courseid' => $context->instanceid,
+                    'userid' => $user->id,
+                    'anonymous' => 0,
+                ]);
+
+                if (empty($records)) {
+                    continue;
+                }
+
+                $data = [];
+                foreach ($records as $record) {
+                    $data[] = (object) [
+                        'sentiment' => $record->sentiment,
+                        'category' => $record->category,
+                        'feedbacktext' => $record->feedbacktext,
+                        'coursename' => $record->coursename,
+                        'cmname' => $record->cmname,
+                        'campaignname' => $record->campaignname,
+                        'pageurl' => $record->pageurl,
+                        'breadcrumb' => $record->breadcrumb,
+                        'timecreated' => \core_privacy\local\request\transform::datetime($record->timecreated),
+                    ];
+                }
+
+                writer::with_context($context)->export_data(
+                    [get_string('pluginname', 'local_feedback')],
+                    (object) ['submissions' => $data]
+                );
+            } else if ($context->contextlevel === CONTEXT_SYSTEM) {
+                $responses = $DB->get_records('local_feedback_campaign_responses', ['userid' => $user->id]);
+                if (empty($responses)) {
+                    continue;
+                }
+
+                $data = [];
+                foreach ($responses as $response) {
+                    $campaignname = $DB->get_field('local_feedback_campaigns', 'name', ['id' => $response->campaignid]);
+                    $coursename = $DB->get_field('course', 'fullname', ['id' => $response->courseid]);
+                    $data[] = (object) [
+                        'campaignname' => $campaignname !== false ? $campaignname : null,
+                        'coursename' => $coursename !== false ? $coursename : null,
+                        'timecreated' => \core_privacy\local\request\transform::datetime($response->timecreated),
+                    ];
+                }
+
+                writer::with_context($context)->export_data(
+                    [get_string('pluginname', 'local_feedback'), get_string('privacy:campaignresponses', 'local_feedback')],
+                    (object) ['responses' => $data]
+                );
             }
-
-            $records = $DB->get_records('local_feedback_submissions', [
-                'courseid' => $context->instanceid,
-                'userid' => $user->id,
-                'anonymous' => 0,
-            ]);
-
-            if (empty($records)) {
-                continue;
-            }
-
-            $data = [];
-            foreach ($records as $record) {
-                $data[] = (object) [
-                    'sentiment' => $record->sentiment,
-                    'category' => $record->category,
-                    'feedbacktext' => $record->feedbacktext,
-                    'coursename' => $record->coursename,
-                    'cmname' => $record->cmname,
-                    'pageurl' => $record->pageurl,
-                    'breadcrumb' => $record->breadcrumb,
-                    'timecreated' => \core_privacy\local\request\transform::datetime($record->timecreated),
-                ];
-            }
-
-            writer::with_context($context)->export_data(
-                [get_string('pluginname', 'local_feedback')],
-                (object) ['submissions' => $data]
-            );
         }
     }
 
@@ -160,11 +203,11 @@ class provider implements
     public static function delete_data_for_all_users_in_context(\context $context): void {
         global $DB;
 
-        if ($context->contextlevel !== CONTEXT_COURSE) {
-            return;
+        if ($context->contextlevel === CONTEXT_COURSE) {
+            $DB->delete_records('local_feedback_submissions', ['courseid' => $context->instanceid]);
+        } else if ($context->contextlevel === CONTEXT_SYSTEM) {
+            $DB->delete_records('local_feedback_campaign_responses');
         }
-
-        $DB->delete_records('local_feedback_submissions', ['courseid' => $context->instanceid]);
     }
 
     /**
@@ -178,15 +221,15 @@ class provider implements
         $user = $contextlist->get_user();
 
         foreach ($contextlist->get_contexts() as $context) {
-            if ($context->contextlevel !== CONTEXT_COURSE) {
-                continue;
+            if ($context->contextlevel === CONTEXT_COURSE) {
+                $DB->delete_records('local_feedback_submissions', [
+                    'courseid' => $context->instanceid,
+                    'userid' => $user->id,
+                    'anonymous' => 0,
+                ]);
+            } else if ($context->contextlevel === CONTEXT_SYSTEM) {
+                $DB->delete_records('local_feedback_campaign_responses', ['userid' => $user->id]);
             }
-
-            $DB->delete_records('local_feedback_submissions', [
-                'courseid' => $context->instanceid,
-                'userid' => $user->id,
-                'anonymous' => 0,
-            ]);
         }
     }
 
@@ -199,16 +242,19 @@ class provider implements
         global $DB;
 
         $context = $userlist->get_context();
-        if ($context->contextlevel !== CONTEXT_COURSE) {
-            return;
-        }
 
-        foreach ($userlist->get_userids() as $userid) {
-            $DB->delete_records('local_feedback_submissions', [
-                'courseid' => $context->instanceid,
-                'userid' => $userid,
-                'anonymous' => 0,
-            ]);
+        if ($context->contextlevel === CONTEXT_COURSE) {
+            foreach ($userlist->get_userids() as $userid) {
+                $DB->delete_records('local_feedback_submissions', [
+                    'courseid' => $context->instanceid,
+                    'userid' => $userid,
+                    'anonymous' => 0,
+                ]);
+            }
+        } else if ($context->contextlevel === CONTEXT_SYSTEM) {
+            foreach ($userlist->get_userids() as $userid) {
+                $DB->delete_records('local_feedback_campaign_responses', ['userid' => $userid]);
+            }
         }
     }
 }

@@ -15,13 +15,15 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Feedback report for a single course, locked to that course only.
+ * Feedback report for a single course, under a single campaign - locked to both.
  *
  * Linked from that course's own Reports menu (see local_feedback_extend_navigation_course()
- * in lib.php). Access is checked at the COURSE context, so a role granting
+ * in lib.php), which only ever links here for a course-focused campaign genuinely
+ * targeting this course. Access is checked at the COURSE context, so a role granting
  * local/feedback:viewreports only within this course (not site-wide) is enough - and,
- * unlike report.php, there is no course selector here and no way to see any other course's
- * data from this page.
+ * unlike report.php, there is no course selector here and no way to see any other
+ * course's data from this page. There's no campaign selector either any more - every
+ * report is scoped to exactly one campaign, see report.php's docblock for why.
  *
  * @package     local_feedback
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
@@ -30,18 +32,30 @@
 
 require(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/classes/table/submissions_table.php');
+require_once(__DIR__ . '/classes/table/courses_summary_table.php');
 require_once(__DIR__ . '/classes/local/stats.php');
+require_once(__DIR__ . '/classes/local/campaigns.php');
+require_once(__DIR__ . '/classes/local/report_helper.php');
 
 use local_feedback\table\submissions_table;
+use local_feedback\table\courses_summary_table;
 use local_feedback\local\stats;
+use local_feedback\local\campaigns;
+use local_feedback\local\report_helper;
 
 $courseid = required_param('courseid', PARAM_INT);
+$campaignid = required_param('campaignid', PARAM_INT);
 $course = get_course($courseid);
 
 require_login($course);
 
 $context = context_course::instance($course->id);
 require_capability('local/feedback:viewreports', $context);
+
+$campaign = campaigns::get($campaignid);
+if (!$campaign) {
+    throw new moodle_exception('invalidrecord', 'error');
+}
 
 $sentiment = optional_param('sentiment', '', PARAM_ALPHA);
 $topic = optional_param('topic', '', PARAM_RAW_TRIMMED);
@@ -53,14 +67,22 @@ if ($reset) {
     $topic = '';
 }
 
+$heading = get_string('reportheading_course_campaign', 'local_feedback', (object) [
+    'course' => format_string($course->fullname),
+    'campaign' => format_string($campaign->name),
+]);
+
+$labels = campaigns::get_sentiment_labels($campaign);
+
 $PAGE->set_context($context);
 $PAGE->set_course($course);
-$PAGE->set_url(new moodle_url('/local/feedback/course_report.php', ['courseid' => $courseid]));
+$PAGE->set_url(new moodle_url('/local/feedback/course_report.php', ['courseid' => $courseid, 'campaignid' => $campaignid]));
 $PAGE->set_pagelayout('report');
-$PAGE->set_title(get_string('reportheading', 'local_feedback') . ': ' . format_string($course->fullname));
+$PAGE->set_title($heading);
 $PAGE->set_heading($course->fullname);
+$PAGE->requires->css('/local/feedback/styles.css');
 
-$urlparams = ['courseid' => $courseid];
+$urlparams = ['courseid' => $courseid, 'campaignid' => $campaignid];
 if ($sentiment !== '') {
     $urlparams['sentiment'] = $sentiment;
 }
@@ -69,19 +91,23 @@ if ($topic !== '') {
 }
 $url = new moodle_url('/local/feedback/course_report.php', $urlparams);
 
-$table = new submissions_table('local-feedback-course-submissions', $url, $courseid, $sentiment, true, $topic);
+$table = new submissions_table(
+    'local-feedback-course-submissions', $url, $courseid, $sentiment, true, $topic, $campaignid, $labels
+);
 $table->is_downloading($download, 'course_feedback_' . $course->shortname, format_string($course->fullname));
 $table->show_download_buttons_at([TABLE_P_TOP]);
 
 if (!$table->is_downloading()) {
     echo $OUTPUT->header();
-    echo $OUTPUT->heading(get_string('reportheading', 'local_feedback'));
+    echo $OUTPUT->heading($heading);
+    echo report_helper::render_widget_preview($campaign);
 }
 
-// Summary stats, scoped to this course.
+// Summary stats, scoped to this course and this campaign.
 $counts = $DB->get_records_sql(
-    'SELECT sentiment, COUNT(*) AS total FROM {local_feedback_submissions} WHERE courseid = :courseid GROUP BY sentiment',
-    ['courseid' => $courseid]
+    'SELECT sentiment, COUNT(*) AS total FROM {local_feedback_submissions}
+      WHERE courseid = :courseid AND campaignid = :campaignid GROUP BY sentiment',
+    ['courseid' => $courseid, 'campaignid' => $campaignid]
 );
 $stats = ['happy' => 0, 'neutral' => 0, 'sad' => 0];
 $total = 0;
@@ -93,23 +119,35 @@ foreach ($counts as $row) {
 }
 
 if (!$table->is_downloading()) {
-    echo html_writer::start_div('local-feedback__stats');
+    // Trend renders first - see report.php's flat-branch stats block for why the order
+    // matters (grid auto-placement, not just visual preference).
+    echo html_writer::start_div('local-feedback__stats local-feedback__stats--withtrend');
+    if ($total > 0) {
+        $trendrow = stats::get_campaign_trend($campaignid, $courseid);
+        echo html_writer::div(
+            courses_summary_table::render_trend_indicator($trendrow, courses_summary_table::get_trend_window()),
+            'local-feedback__stat-value local-feedback__stat-value--trend',
+            ['data-label' => get_string('report_col_trend', 'local_feedback')]
+        );
+    }
     echo html_writer::div($total, 'local-feedback__stat-value', ['data-label' => get_string('report_stat_total', 'local_feedback')]);
     foreach (['happy', 'neutral', 'sad'] as $key) {
         echo html_writer::div(
             $stats[$key],
             'local-feedback__stat-value',
-            ['data-label' => get_string('report_stat_' . $key, 'local_feedback')]
+            ['data-label' => $labels[$key]]
         );
     }
     echo html_writer::end_div();
 
-    // Filter form: sentiment and topic - the course itself is fixed by the page you're on.
-    // Topic options are the topics this course has actually been given feedback on (rather
-    // than the current admin-configured preset list), so a submission tagged with a preset
-    // that's since been edited/removed, or free text via "Other", is always filterable.
+    // Filter form: sentiment and topic - the course and campaign are both fixed by the
+    // page you're on. Topic options are the topics actually used under this campaign in
+    // this course (rather than the current admin-configured preset list), so a
+    // submission tagged with a preset that's since been edited/removed, or free text via
+    // "Other", is always filterable.
     echo html_writer::start_tag('form', ['method' => 'get', 'class' => 'local-feedback__filters']);
     echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'courseid', 'value' => $courseid]);
+    echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'campaignid', 'value' => $campaignid]);
 
     echo html_writer::start_tag('label', ['for' => 'local-feedback-filter-sentiment']);
     echo get_string('report_filtersentiment', 'local_feedback');
@@ -117,9 +155,9 @@ if (!$table->is_downloading()) {
 
     $sentimentoptions = [
         '' => get_string('report_allsentiments', 'local_feedback'),
-        'happy' => get_string('sentiment_happy', 'local_feedback'),
-        'neutral' => get_string('sentiment_neutral', 'local_feedback'),
-        'sad' => get_string('sentiment_sad', 'local_feedback'),
+        'happy' => $labels['happy'],
+        'neutral' => $labels['neutral'],
+        'sad' => $labels['sad'],
     ];
     echo html_writer::select($sentimentoptions, 'sentiment', $sentiment, null, ['id' => 'local-feedback-filter-sentiment']);
 
@@ -128,7 +166,7 @@ if (!$table->is_downloading()) {
     echo html_writer::end_tag('label');
 
     $topicoptions = ['' => get_string('report_alltopics', 'local_feedback')];
-    foreach (stats::get_topic_breakdown($courseid) as $row) {
+    foreach (stats::get_topic_breakdown($courseid, $campaignid) as $row) {
         if ($row->category !== null && $row->category !== '') {
             $topicoptions[$row->category] = s($row->category);
         } else {
@@ -143,7 +181,7 @@ if (!$table->is_downloading()) {
         'class' => 'btn btn-primary',
     ]);
     echo html_writer::link(
-        new moodle_url('/local/feedback/course_report.php', ['courseid' => $courseid, 'reset' => 1]),
+        new moodle_url('/local/feedback/course_report.php', ['courseid' => $courseid, 'campaignid' => $campaignid, 'reset' => 1]),
         get_string('report_reset', 'local_feedback'),
         ['class' => 'btn btn-secondary']
     );

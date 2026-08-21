@@ -53,6 +53,7 @@ try {
 
     $courseid = required_param('courseid', PARAM_INT);
     $cmid = optional_param('cmid', 0, PARAM_INT);
+    $campaignid = optional_param('campaignid', 0, PARAM_INT);
     $sentiment = required_param('sentiment', PARAM_ALPHA);
     $category = optional_param('category', '', PARAM_TEXT);
     $categoryother = optional_param('categoryother', 0, PARAM_BOOL) ? true : false;
@@ -72,27 +73,6 @@ try {
         throw new invalid_parameter_exception('Invalid sentiment');
     }
 
-    // The category step is optional/skippable, so an empty value is fine - just not
-    // recorded. A non-"Other" value must exactly match one of the admin-configured
-    // areas (defends against a tampered request inventing an arbitrary category
-    // while bypassing the free-text "Other" path); "Other" text just needs trimming
-    // and a sane length cap.
-    $category = trim($category);
-    if ($category !== '') {
-        if ($categoryother) {
-            $category = mb_substr($category, 0, 255);
-        } else if (!in_array($category, \local_feedback\local\categories::get_list(), true)) {
-            throw new invalid_parameter_exception('Invalid category');
-        }
-    }
-
-    $feedbacktext = trim($feedbacktext);
-    if ($feedbacktext === '') {
-        echo json_encode(['success' => false, 'error' => get_string('error_empty', 'local_feedback')]);
-        @ob_end_flush();
-        exit(0);
-    }
-
     // Course/module/section identity is always re-derived server-side, never trusted from the client.
     $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
     $context = context_course::instance($course->id);
@@ -101,6 +81,7 @@ try {
     $cmname = null;
     $modname = null;
     $sectionname = null;
+    $cm = null;
     if ($cmid) {
         $modinfo = get_fast_modinfo($course);
         $cm = $modinfo->get_cm($cmid);
@@ -113,7 +94,53 @@ try {
             }
         } else {
             $cmid = 0;
+            $cm = null;
         }
+    }
+
+    // Re-derive which campaign is actually live server-side, rather than trusting the
+    // client-supplied campaignid outright - it may have expired or been disabled while
+    // the user was filling in the form. Falling back to 0 rather than rejecting the
+    // submission keeps the feedback (still useful) instead of losing it over a stale id -
+    // UNLESS the specific reason it's no longer live is that this user has just used up
+    // its response limit, in which case the submission is actively rejected instead (the
+    // whole point of a limit is to stop the extra response being recorded at all).
+    $activecampaign = \local_feedback\local\campaigns::get_active_for_context($course, $cm, $pagetype, $USER);
+    if ($activecampaign && $activecampaign->id == $campaignid) {
+        $recordcampaignid = $activecampaign->id;
+        $recordcampaignname = $activecampaign->name;
+    } else {
+        $submittedcampaign = $campaignid ? \local_feedback\local\campaigns::get($campaignid) : null;
+        if ($submittedcampaign
+            && \local_feedback\local\campaigns::has_reached_response_limit($submittedcampaign, $USER->id, $course->id)) {
+            throw new moodle_exception('error_responselimit', 'local_feedback');
+        }
+        $recordcampaignid = 0;
+        $recordcampaignname = null;
+    }
+
+    // The category step is optional/skippable, so an empty value is fine - just not
+    // recorded. A non-"Other" value must exactly match one of the labels actually shown
+    // for the campaign the widget was loaded under - fetched by the raw submitted id
+    // rather than $activecampaign above, so a campaign that expired/was disabled while
+    // the user was still filling in the form doesn't wrongly reject a real preset label
+    // (attribution already falls back to 0 in that case; this is only checking the
+    // label is real, defending against a tampered request inventing an arbitrary one).
+    $shownunder = $campaignid ? \local_feedback\local\campaigns::get($campaignid) : null;
+    $category = trim($category);
+    if ($category !== '') {
+        if ($categoryother) {
+            $category = mb_substr($category, 0, 255);
+        } else if (!in_array($category, \local_feedback\local\categories::get_list_for_campaign($shownunder ?: null), true)) {
+            throw new invalid_parameter_exception('Invalid category');
+        }
+    }
+
+    $feedbacktext = trim($feedbacktext);
+    if ($feedbacktext === '') {
+        echo json_encode(['success' => false, 'error' => get_string('error_empty', 'local_feedback')]);
+        @ob_end_flush();
+        exit(0);
     }
 
     $record = new stdClass();
@@ -137,9 +164,17 @@ try {
     $record->screenwidth = $screenwidth ?: null;
     $record->screenheight = $screenheight ?: null;
     $record->lang = mb_substr($lang, 0, 30);
+    $record->campaignid = $recordcampaignid;
+    $record->campaignname = $recordcampaignname;
     $record->timecreated = time();
 
     $DB->insert_record('local_feedback_submissions', $record);
+
+    // Recorded against the real user id regardless of $anonymous or whether this
+    // campaign even has a response limit set - see campaigns::record_response().
+    if ($recordcampaignid) {
+        \local_feedback\local\campaigns::record_response($recordcampaignid, $USER->id, $course->id);
+    }
 
     $extra = @ob_get_clean();
     if ($extra !== false && trim($extra) !== '') {

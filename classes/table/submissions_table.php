@@ -48,6 +48,9 @@ class submissions_table extends \table_sql {
      */
     public const TOPIC_UNSPECIFIED = '__unspecified__';
 
+    /** @var array Sentiment button label overrides passed to the constructor, keyed 'happy'/'neutral'/'sad'. */
+    protected array $sentimentlabels = [];
+
     /**
      * @param string $uniqueid
      * @param \moodle_url $baseurl
@@ -58,6 +61,12 @@ class submissions_table extends \table_sql {
      * @param string $topic Filter by topic (the "category" column) - an exact match
      *                       against submitted text, {@see TOPIC_UNSPECIFIED} for
      *                       responses with none set, or '' for all.
+     * @param int $campaignid Filter to this campaign, 0 for all.
+     * @param array $sentimentlabels Sentiment button labels to show instead of the site
+     *                                 defaults, keyed 'happy'/'neutral'/'sad' - a
+     *                                 campaign's own overrides, see
+     *                                 campaigns::get_sentiment_labels(). Missing keys
+     *                                 fall back to the site default individually.
      */
     public function __construct(
         $uniqueid,
@@ -65,15 +74,22 @@ class submissions_table extends \table_sql {
         int $courseid = 0,
         string $sentiment = '',
         bool $hidecoursecolumn = false,
-        string $topic = ''
+        string $topic = '',
+        int $campaignid = 0,
+        array $sentimentlabels = []
     ) {
         parent::__construct($uniqueid);
 
-        $columns = ['timecreated', 'sentiment', 'category', 'coursename', 'activity', 'user', 'feedbacktext', 'page'];
+        $this->sentimentlabels = $sentimentlabels;
+
+        $columns = [
+            'timecreated', 'sentiment', 'category', 'campaignname', 'coursename', 'activity', 'user', 'feedbacktext', 'page',
+        ];
         $headers = [
             get_string('report_col_time', 'local_feedback'),
             get_string('report_col_sentiment', 'local_feedback'),
             get_string('report_col_category', 'local_feedback'),
+            get_string('report_col_campaign', 'local_feedback'),
             get_string('report_col_course', 'local_feedback'),
             get_string('report_col_activity', 'local_feedback'),
             get_string('report_col_user', 'local_feedback'),
@@ -119,9 +135,14 @@ class submissions_table extends \table_sql {
             $params['topic'] = $topic;
         }
 
+        if ($campaignid) {
+            $where[] = 'campaignid = :campaignid';
+            $params['campaignid'] = $campaignid;
+        }
+
         $this->set_sql(
             'id, userid, anonymous, courseid, coursename, cmid, cmname, modname, sectionname,
-             sentiment, category, feedbacktext, pageurl, pagetype, breadcrumb, pagetitle, timecreated',
+             sentiment, category, feedbacktext, pageurl, pagetype, breadcrumb, pagetitle, campaignid, campaignname, timecreated',
             '{local_feedback_submissions}',
             implode(' AND ', $where),
             $params
@@ -142,7 +163,7 @@ class submissions_table extends \table_sql {
      */
     public function col_sentiment($row): string {
         $icon = self::SENTIMENT_ICONS[$row->sentiment] ?? '';
-        $label = get_string('sentiment_' . $row->sentiment, 'local_feedback');
+        $label = $this->sentimentlabels[$row->sentiment] ?? get_string('sentiment_' . $row->sentiment, 'local_feedback');
         return $icon . ' ' . $label;
     }
 
@@ -152,6 +173,18 @@ class submissions_table extends \table_sql {
      */
     public function col_category($row): string {
         return $row->category ? s($row->category) : '-';
+    }
+
+    /**
+     * @param \stdClass $row
+     * @return string
+     */
+    public function col_campaignname($row): string {
+        if (empty($row->campaignid)) {
+            return '-';
+        }
+
+        return $row->campaignname ? s($row->campaignname) : get_string('campaign_deleted', 'local_feedback');
     }
 
     /**

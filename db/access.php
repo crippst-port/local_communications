@@ -46,4 +46,13 @@ $capabilities = [
             'manager' => CAP_ALLOW,
         ],
     ],
+
+    // Allows a user to create/edit/delete feedback campaigns.
+    'local/feedback:managecampaigns' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 ];

@@ -21,12 +21,18 @@ use local_feedback\table\courses_summary_table;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Renders the "Category performance" card on the site-wide report - a glance at which
- * course categories are scoring best/worst, without listing every category on the page
- * itself the way an early version of this card did (unworkable on a site with many
- * categories). The at-a-glance view is a fixed best-3/worst-5 split; the full list sits
- * behind a native <details> disclosure, sortable by clicking a column header, so it's out
- * of the way until wanted rather than always taking up page space.
+ * Shared rendering helpers for campaign reports (report.php/course_report.php).
+ *
+ * render_category_performance() draws the "Category performance" card on a
+ * course-focused campaign's report - a glance at which course categories are scoring
+ * best/worst, without listing every category on the page itself the way an early
+ * version of this card did (unworkable on a site with many categories). The
+ * at-a-glance view is a fixed best-3/worst-5 split; the full list sits behind a native
+ * <details> disclosure, sortable by clicking a column header, so it's out of the way
+ * until wanted rather than always taking up page space.
+ *
+ * render_widget_preview() draws the "what respondents saw" card - the campaign's
+ * effective modal title and intro text.
  *
  * @package     local_feedback
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
@@ -42,6 +48,29 @@ class report_helper {
 
     /** Sortable columns for the full table, mapped to how each is compared. */
     protected const SORT_COLUMNS = ['category', 'total', 'score'];
+
+    /**
+     * A small preview of what respondents actually saw when the widget opened for this
+     * campaign - its effective modal title (the campaign's own override, or the site
+     * default) and intro text, if it set one - shown once at the top of a campaign's
+     * report so the numbers below are read with the actual question in mind. Rendered
+     * as plain escaped text throughout, matching how the widget itself displays both
+     * (see amd/src/app.js, which sets them via jQuery's .text()) - never as markup.
+     *
+     * @param \stdClass $campaign
+     * @return string
+     */
+    public static function render_widget_preview(\stdClass $campaign): string {
+        $title = $campaign->modaltitle ?: get_string('modaltitle', 'local_feedback');
+
+        $out = \html_writer::div(get_string('report_widgetpreview', 'local_feedback'), 'local-feedback__widgetpreview-label');
+        $out .= \html_writer::div(format_string($title), 'local-feedback__widgetpreview-title');
+        if (!empty($campaign->introtext)) {
+            $out .= \html_writer::tag('p', s($campaign->introtext), ['class' => 'local-feedback__widgetpreview-intro']);
+        }
+
+        return \html_writer::div($out, 'local-feedback__widgetpreview');
+    }
 
     /**
      * @param array<int, \stdClass> $rows Each needs ->categoryid, ->label (already

@@ -27,10 +27,15 @@ defined('MOODLE_INTERNAL') || die();
 
 // Registered unconditionally (like core report plugins) so that anyone holding
 // local/feedback:viewreports can reach it, not only users with moodle/site:config.
+// Every report is scoped to one campaign now - manage_campaigns.php (its list of
+// campaigns, each linking to its own dashboard) is the front door for that, so this is
+// the only page registered here; there's no pooled "every campaign" report any more.
+// manage_campaigns.php itself further restricts the create/edit/toggle/delete actions
+// to local/feedback:managecampaigns internally - this capability only gates viewing.
 $ADMIN->add('reports', new admin_externalpage(
-    'local_feedback_report',
-    get_string('reportheading_sitewide', 'local_feedback'),
-    new moodle_url('/local/feedback/report.php'),
+    'local_feedback_campaigns',
+    get_string('managecampaigns', 'local_feedback'),
+    new moodle_url('/local/feedback/manage_campaigns.php'),
     'local/feedback:viewreports'
 ));
 

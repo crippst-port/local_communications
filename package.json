@@ -1,0 +1,16 @@
+{
+  "name": "local_feedback",
+  "version": "0.2.0",
+  "description": "Moodle plugin: campaign-targeted course feedback widget",
+  "license": "GPL-3.0-or-later",
+  "private": true,
+  "scripts": {
+    "build": "grunt",
+    "watch": "grunt watch"
+  },
+  "devDependencies": {
+    "grunt": "^1.3.0",
+    "grunt-contrib-uglify": "^5.2.2",
+    "grunt-contrib-watch": "^1.1.0"
+  }
+}
