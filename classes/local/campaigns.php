@@ -148,6 +148,9 @@ class campaigns {
             if ($campaign->endtime && $campaign->endtime < $now) {
                 continue;
             }
+            if (self::has_reached_max_responses($campaign)) {
+                continue;
+            }
             if (!self::matches_category($campaign, $course)) {
                 continue;
             }
@@ -175,6 +178,33 @@ class campaigns {
         }
 
         return $best;
+    }
+
+    /**
+     * Whether this campaign has collected its configured maximum number of responses -
+     * a whole-campaign cutoff (0 = no limit), not a per-user one like
+     * {@see has_reached_response_limit()}, so once it's hit the campaign simply stops
+     * matching for everyone, the same as it expiring or being disabled - a submission
+     * already in flight from before the cutoff was hit still falls back to an
+     * unattributed response rather than being rejected (see ajax/submit.php), the same
+     * grace already given to a campaign that expires or gets disabled mid-fill.
+     *
+     * Counts real rows in local_feedback_submissions - the same number a campaign's own
+     * report shows as "Total responses" - not the response-limit ledger, which exists
+     * for a different purpose and can diverge from it (e.g. it isn't touched by
+     * unattributed submissions at all).
+     *
+     * @param \stdClass $campaign
+     * @return bool
+     */
+    public static function has_reached_max_responses(\stdClass $campaign): bool {
+        global $DB;
+
+        if (empty($campaign->maxresponses)) {
+            return false;
+        }
+
+        return $DB->count_records('local_feedback_submissions', ['campaignid' => $campaign->id]) >= $campaign->maxresponses;
     }
 
     /**

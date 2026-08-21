@@ -300,5 +300,20 @@ function xmldb_local_feedback_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026082106, 'local', 'feedback');
     }
 
+    if ($oldversion < 2026082107) {
+        // Auto-deactivate a campaign once it's collected a set number of responses - 0
+        // (the default) means no limit. This is a whole-campaign cutoff, not a per-user
+        // one, so it's checked alongside the date window in
+        // campaigns::get_active_for_context(), not the response-limit ledger.
+        $table = new xmldb_table('local_feedback_campaigns');
+        $field = new xmldb_field('maxresponses', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'responselimit');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2026082107, 'local', 'feedback');
+    }
+
     return true;
 }

@@ -90,6 +90,9 @@ $table->head = [
 
 $now = time();
 foreach ($campaigns as $campaign) {
+    $responsecount = $DB->count_records('local_feedback_submissions', ['campaignid' => $campaign->id]);
+    $limitreached = !empty($campaign->maxresponses) && $responsecount >= $campaign->maxresponses;
+
     $status = $campaign->enabled
         ? get_string('campaign_status_enabled', 'local_feedback')
         : get_string('campaign_status_disabled', 'local_feedback');
@@ -97,13 +100,19 @@ foreach ($campaigns as $campaign) {
         $status = get_string('campaign_status_scheduled', 'local_feedback');
     } else if ($campaign->enabled && $campaign->endtime && $campaign->endtime < $now) {
         $status = get_string('campaign_status_ended', 'local_feedback');
+    } else if ($campaign->enabled && $limitreached) {
+        $status = get_string('campaign_status_limitreached', 'local_feedback');
     }
 
     $window = get_string('campaign_window_start', 'local_feedback', $campaign->starttime ? userdate($campaign->starttime) : get_string('campaign_window_unbounded', 'local_feedback'))
         . ' — '
         . get_string('campaign_window_end', 'local_feedback', $campaign->endtime ? userdate($campaign->endtime) : get_string('campaign_window_unbounded', 'local_feedback'));
 
-    $responsecount = $DB->count_records('local_feedback_submissions', ['campaignid' => $campaign->id]);
+    $responsedisplay = !empty($campaign->maxresponses)
+        ? get_string('campaign_responses_of_max', 'local_feedback', (object) [
+            'count' => $responsecount, 'max' => $campaign->maxresponses,
+        ])
+        : $responsecount;
 
     $actions = [];
     $actions[] = html_writer::link(
@@ -135,7 +144,7 @@ foreach ($campaigns as $campaign) {
         $status,
         $window,
         campaigns::describe_targeting($campaign),
-        $responsecount,
+        $responsedisplay,
         implode(' | ', $actions),
     ];
 }

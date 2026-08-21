@@ -59,6 +59,7 @@
         <FIELD NAME="labelsad" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Overrides the text shown under the sad sentiment face for this campaign; empty falls back to the sentiment_sad language string"/>
         <FIELD NAME="coursefocused" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether this campaign's report compares courses/categories and is linked from matching courses' own Reports menus (1), or gets a flat course-less dashboard and no course nav link (0)"/>
         <FIELD NAME="responselimit" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="none" SEQUENCE="false" COMMENT="How often the same user may submit to this campaign: none, daily (once per calendar day) or once (once ever)"/>
+        <FIELD NAME="maxresponses" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Once this many total responses have been collected the campaign stops matching for anyone; 0 = no limit"/>
         <FIELD NAME="categoryids" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Newline list of Moodle course category ids to target (matches descendants too); empty = all categories"/>
         <FIELD NAME="pagetypepatterns" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Newline list of $PAGE->pagetype patterns, * wildcard supported; empty = all pages"/>
         <FIELD NAME="targetroles" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="CSV of role shortnames; empty = no role restriction"/>

@@ -106,6 +106,11 @@ class campaign_form extends \moodleform {
         $mform->setDefault('responselimit', 'none');
         $mform->addHelpButton('responselimit', 'campaign_responselimit', 'local_feedback');
 
+        $mform->addElement('text', 'maxresponses', get_string('campaign_maxresponses', 'local_feedback'), ['size' => 6]);
+        $mform->setType('maxresponses', PARAM_INT);
+        $mform->setDefault('maxresponses', 0);
+        $mform->addHelpButton('maxresponses', 'campaign_maxresponses', 'local_feedback');
+
         $mform->addElement(
             'date_time_selector',
             'starttime',
@@ -261,6 +266,10 @@ class campaign_form extends \moodleform {
             $errors['endtime'] = get_string('campaign_error_daterange', 'local_feedback');
         }
 
+        if ((string) $data['maxresponses'] !== '' && (int) $data['maxresponses'] < 0) {
+            $errors['maxresponses'] = get_string('campaign_error_maxresponses', 'local_feedback');
+        }
+
         if (trim((string) $data['targetuserids']) !== '') {
             foreach (preg_split('/\r\n|\r|\n/', $data['targetuserids']) as $line) {
                 $line = trim($line);
@@ -370,6 +379,7 @@ class campaign_form extends \moodleform {
         $record->enabled = $data->enabled ? 1 : 0;
         $record->coursefocused = $data->coursefocused ? 1 : 0;
         $record->responselimit = in_array($data->responselimit, ['none', 'daily', 'once'], true) ? $data->responselimit : 'none';
+        $record->maxresponses = max(0, (int) $data->maxresponses);
         $record->priority = (int) $data->priority;
         $record->starttime = (int) $data->starttime;
         $record->endtime = (int) $data->endtime;

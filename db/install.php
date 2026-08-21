@@ -47,6 +47,7 @@ function xmldb_local_feedback_install() {
     $campaign->labelsad = null;
     $campaign->coursefocused = 1;
     $campaign->responselimit = 'none';
+    $campaign->maxresponses = 0;
     $campaign->categoryids = null;
     $campaign->pagetypepatterns = null;
     $campaign->targetroles = null;
