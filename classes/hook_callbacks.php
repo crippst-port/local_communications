@@ -186,6 +186,8 @@ class hook_callbacks {
             'category_other_placeholder',
             'category_skip',
             'continue',
+            'neverask_prefix',
+            'neverask_linktext',
         ], 'local_feedback');
 
         $html = $OUTPUT->render_from_template('local_feedback/floating_button', [

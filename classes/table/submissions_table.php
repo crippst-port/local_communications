@@ -67,6 +67,12 @@ class submissions_table extends \table_sql {
      *                                 campaign's own overrides, see
      *                                 campaigns::get_sentiment_labels(). Missing keys
      *                                 fall back to the site default individually.
+     * @param int $userid Restrict to this user's own submissions, 0 for everyone -
+     *                     used by my_submissions.php; implies non-anonymous, since
+     *                     anonymous submissions are stored with userid 0 and are never
+     *                     linked back to who made them anywhere, including here.
+     * @param bool $hideusercolumn Omit the user column - used on my_submissions.php,
+     *                              where every row is the viewing user themselves.
      */
     public function __construct(
         $uniqueid,
@@ -76,7 +82,9 @@ class submissions_table extends \table_sql {
         bool $hidecoursecolumn = false,
         string $topic = '',
         int $campaignid = 0,
-        array $sentimentlabels = []
+        array $sentimentlabels = [],
+        int $userid = 0,
+        bool $hideusercolumn = false
     ) {
         parent::__construct($uniqueid);
 
@@ -100,6 +108,13 @@ class submissions_table extends \table_sql {
         if ($hidecoursecolumn) {
             $courseindex = array_search('coursename', $columns, true);
             unset($columns[$courseindex], $headers[$courseindex]);
+            $columns = array_values($columns);
+            $headers = array_values($headers);
+        }
+
+        if ($hideusercolumn) {
+            $userindex = array_search('user', $columns, true);
+            unset($columns[$userindex], $headers[$userindex]);
             $columns = array_values($columns);
             $headers = array_values($headers);
         }
@@ -138,6 +153,11 @@ class submissions_table extends \table_sql {
         if ($campaignid) {
             $where[] = 'campaignid = :campaignid';
             $params['campaignid'] = $campaignid;
+        }
+
+        if ($userid) {
+            $where[] = 'userid = :userid';
+            $params['userid'] = $userid;
         }
 
         $this->set_sql(

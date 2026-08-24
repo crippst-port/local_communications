@@ -73,3 +73,61 @@ function local_feedback_extend_navigation_course($navigation, $course, $context)
         new pix_icon('i/report', '')
     );
 }
+
+/**
+ * Adds a link to the Preferences page (user/preferences.php) for managing which
+ * feedback campaigns this user has asked not to be shown again (the "click here
+ * if you'd prefer not to be asked" link in the widget itself).
+ *
+ * Self-service only: never shown while viewing/editing someone else's preferences.
+ *
+ * @param navigation_node $navigation
+ * @param stdClass $user
+ * @param context_user $usercontext
+ * @param stdClass $course
+ * @param context $coursecontext
+ */
+function local_feedback_extend_navigation_user_settings($navigation, $user, $usercontext, $course, $coursecontext) {
+    global $USER;
+
+    if ($USER->id != $user->id || isguestuser($user)) {
+        return;
+    }
+
+    $url = new moodle_url('/local/feedback/preferences.php');
+    $navigation->add(
+        get_string('preferences_link', 'local_feedback'),
+        $url,
+        navigation_node::TYPE_SETTING,
+        null,
+        'local_feedback_preferences',
+        new pix_icon('i/settings', '')
+    );
+}
+
+/**
+ * Adds a link to the user's own profile page listing the feedback they've
+ * personally submitted (non-anonymous only - see my_submissions.php) - only ever
+ * shown while viewing your own profile, since it's personal data, not something
+ * one user browses for another.
+ *
+ * @param \core_user\output\myprofile\tree $tree
+ * @param stdClass $user
+ * @param bool $iscurrentuser
+ * @param stdClass|null $course
+ */
+function local_feedback_myprofile_navigation(core_user\output\myprofile\tree $tree, $user, $iscurrentuser, $course) {
+    if (!$iscurrentuser || isguestuser($user)) {
+        return;
+    }
+
+    $url = new moodle_url('/local/feedback/my_submissions.php');
+    $node = new core_user\output\myprofile\node(
+        'miscellaneous',
+        'local_feedback_mysubmissions',
+        get_string('mysubmissions_link', 'local_feedback'),
+        null,
+        $url
+    );
+    $tree->add_node($node);
+}

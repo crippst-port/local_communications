@@ -53,6 +53,8 @@ define([
         'category_other_placeholder',
         'category_skip',
         'continue',
+        'neverask_prefix',
+        'neverask_linktext',
     ];
 
     /**
@@ -86,6 +88,7 @@ define([
      * @param {Object} params
      */
     var init = function(params) {
+        var wrap = document.getElementById('local-feedback-wrap');
         var trigger = document.getElementById('local-feedback-trigger');
         if (!trigger || trigger.dataset.feedbackBound === '1') {
             return;
@@ -152,6 +155,8 @@ define([
             root.find('[data-action="close"]').text(s.close);
             root.find('[data-role="thankyou-title"]').text(s.thankyou_title);
             root.find('[data-role="thankyou-body"]').text(s.thankyou_body);
+            root.find('[data-role="neverask-prefix"]').text(s.neverask_prefix);
+            root.find('[data-role="neverask-linktext"]').text(s.neverask_linktext);
         };
 
         var promptFor = function(sentiment, s) {
@@ -296,6 +301,19 @@ define([
 
                         root.on('click', '[data-action="close"]', function() {
                             modal.hide();
+                        });
+
+                        root.on('click', '[data-action="neverask"]', function() {
+                            if (wrap) {
+                                wrap.hidden = true;
+                            }
+                            modal.hide();
+                            $.ajax({
+                                url: M.cfg.wwwroot + '/local/feedback/ajax/neverask.php',
+                                method: 'POST',
+                                dataType: 'json',
+                                data: {sesskey: M.cfg.sesskey, campaignid: params.campaignid},
+                            }).fail(Notification.exception);
                         });
 
                         root.on(ModalEvents.hidden, function() {

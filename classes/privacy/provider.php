@@ -42,7 +42,8 @@ use core_privacy\local\request\writer;
 class provider implements
     \core_privacy\local\metadata\provider,
     \core_privacy\local\request\plugin\provider,
-    \core_privacy\local\request\core_userlist_provider {
+    \core_privacy\local\request\core_userlist_provider,
+    \core_privacy\local\request\user_preference_provider {
 
     /**
      * Describe the personal data stored by this plugin.
@@ -51,6 +52,15 @@ class provider implements
      * @return collection
      */
     public static function get_metadata(collection $collection): collection {
+        $collection->add_user_preference(
+            'local_feedback_neverask',
+            'privacy:metadata:preference:neverask'
+        );
+        $collection->add_user_preference(
+            'local_feedback_neverask_all',
+            'privacy:metadata:preference:neverask_all'
+        );
+
         $collection->add_database_table(
             'local_feedback_submissions',
             [
@@ -80,6 +90,41 @@ class provider implements
         );
 
         return $collection;
+    }
+
+    /**
+     * Export this user's "don't ask me again" campaign opt-outs, by campaign name -
+     * a user preference (see \local_feedback\local\dismissed_campaigns), not tied to
+     * any single course/campaign context, so exported here rather than from
+     * export_user_data().
+     *
+     * @param int $userid
+     */
+    public static function export_user_preferences(int $userid) {
+        \core_privacy\local\request\writer::export_user_preference(
+            'local_feedback',
+            'neverask_all',
+            \local_feedback\local\dismissed_campaigns::is_global_optout($userid) ? get_string('yes') : get_string('no'),
+            get_string('privacy:metadata:preference:neverask_all', 'local_feedback')
+        );
+
+        $ids = \local_feedback\local\dismissed_campaigns::get_ids($userid);
+        if (empty($ids)) {
+            return;
+        }
+
+        $names = [];
+        foreach ($ids as $campaignid) {
+            $campaign = \local_feedback\local\campaigns::get($campaignid);
+            $names[] = $campaign ? format_string($campaign->name) : get_string('campaign_deleted', 'local_feedback');
+        }
+
+        \core_privacy\local\request\writer::export_user_preference(
+            'local_feedback',
+            'neverask',
+            implode(', ', $names),
+            get_string('privacy:metadata:preference:neverask', 'local_feedback')
+        );
     }
 
     /**

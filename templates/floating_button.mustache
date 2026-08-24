@@ -23,14 +23,16 @@
     * triggerlabel - visible text label
     * triggeraria - accessible label
 }}
-<button
-    type="button"
-    id="local-feedback-trigger"
-    class="local-feedback__fab"
-    aria-haspopup="dialog"
-    aria-expanded="false"
-    aria-label="{{triggeraria}}"
->
-    <span class="local-feedback__fab-icon" aria-hidden="true">&#128172;</span>
-    <span class="local-feedback__fab-label">{{triggerlabel}}</span>
-</button>
+<div class="local-feedback__fab-wrap" id="local-feedback-wrap">
+    <button
+        type="button"
+        id="local-feedback-trigger"
+        class="local-feedback__fab"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        aria-label="{{triggeraria}}"
+    >
+        <span class="local-feedback__fab-icon" aria-hidden="true"><i class="icon fa fa-comment-dots fa-fw"></i></span>
+        <span class="local-feedback__fab-label">{{triggerlabel}}</span>
+    </button>
+</div>

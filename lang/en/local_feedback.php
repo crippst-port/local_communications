@@ -129,6 +129,29 @@ $string['targetsummary_users'] = '{$a} specific user(s)';
 // Widget / trigger.
 $string['triggerlabel'] = 'Feedback';
 $string['triggeraria'] = 'Give feedback about how this module uses Moodle';
+$string['neverask_prefix'] = "From time to time we'd like to be able to gather feedback from our users which we'll use to improve Moodle, ";
+$string['neverask_linktext'] = "click here if you'd prefer not to be asked.";
+
+// User preferences (profile page).
+$string['preferences_link'] = 'Feedback prompts';
+$string['preferences_heading'] = "Feedback prompts you've turned off";
+$string['preferences_intro'] = "You won't be asked for feedback under these campaigns any more. Re-enable any of them below.";
+$string['preferences_none'] = "You haven't turned off feedback requests for anything.";
+$string['preferences_reenable'] = 'Re-enable';
+$string['preferences_reenableall'] = 'Re-enable all';
+$string['preferences_reenabled'] = 'Feedback requests re-enabled.';
+$string['preferences_bycampaign_heading'] = 'Turned off for specific campaigns';
+$string['preferences_disableall'] = 'Turn off feedback requests everywhere';
+$string['preferences_disableall_intro'] = "Don't want to be asked for feedback at all? You can turn it off site-wide instead of campaign by campaign.";
+$string['preferences_disabledall'] = "Feedback requests turned off everywhere. You won't be asked for feedback on any page.";
+$string['preferences_enableall'] = 'Turn feedback requests back on';
+$string['preferences_enabledall'] = 'Feedback requests turned back on.';
+$string['preferences_globallydisabled'] = "You've turned off feedback requests everywhere - you won't be asked for feedback on any page.";
+
+// My submissions (profile page).
+$string['mysubmissions_link'] = 'My feedback';
+$string['mysubmissions_heading'] = 'Feedback you\'ve submitted';
+$string['mysubmissions_none'] = "You haven't submitted any feedback yet - anonymous submissions don't appear here, since they're not linked back to you anywhere.";
 $string['modaltitle'] = 'How well does this module use Moodle?';
 
 // Sentiments.
@@ -239,3 +262,5 @@ $string['privacy:metadata:local_feedback_campaign_responses:campaignid'] = 'The 
 $string['privacy:metadata:local_feedback_campaign_responses:courseid'] = 'The course the response was made under, used to scope per-course response limits.';
 $string['privacy:metadata:local_feedback_campaign_responses:timecreated'] = 'The time the response was submitted.';
 $string['privacy:campaignresponses'] = 'Campaign response limit records';
+$string['privacy:metadata:preference:neverask'] = 'Whether this user has asked not to be shown the feedback widget for particular campaigns.';
+$string['privacy:metadata:preference:neverask_all'] = 'Whether this user has turned off feedback requests everywhere.';

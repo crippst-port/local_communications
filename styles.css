@@ -1,9 +1,12 @@
 /* Floating feedback trigger button. */
-.local-feedback__fab {
+.local-feedback__fab-wrap {
     position: fixed;
     left: .85rem;
     bottom: 1rem;
     z-index: 1040;
+}
+
+.local-feedback__fab {
     display: flex;
     align-items: center;
     gap: .4rem;
@@ -80,6 +83,30 @@
 .local-feedback__sentiment-label {
     font-size: .85rem;
     font-weight: 600;
+}
+
+.local-feedback__neverask {
+    margin: .9rem 0 0;
+    color: #4b5563;
+    font-size: .8rem;
+    line-height: 1.4;
+}
+
+.local-feedback__neverask-link {
+    padding: 0;
+    border: none;
+    background: none;
+    color: #1f2937;
+    font-size: .8rem;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.local-feedback__neverask-link:hover,
+.local-feedback__neverask-link:focus {
+    color: #000;
+    outline: none;
 }
 
 .local-feedback__prompt {

@@ -138,6 +138,10 @@ class campaigns {
      * @return \stdClass|null
      */
     public static function get_active_for_context(\stdClass $course, ?\cm_info $cm, string $pagetype, \stdClass $user): ?\stdClass {
+        if (dismissed_campaigns::is_global_optout($user->id)) {
+            return null;
+        }
+
         $now = time();
         $best = null;
 
@@ -167,6 +171,9 @@ class campaigns {
                 continue;
             }
             if (self::has_reached_response_limit($campaign, $user->id, $course->id)) {
+                continue;
+            }
+            if (dismissed_campaigns::is_dismissed($campaign->id, $user->id)) {
                 continue;
             }
 
