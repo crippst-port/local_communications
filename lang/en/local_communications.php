@@ -17,7 +17,7 @@
 /**
  * Plugin strings are defined here.
  *
- * @package     local_feedback
+ * @package     local_communications
  * @category    string
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Feedback';
+$string['pluginname'] = 'Communications';
 
 // Capabilities.
 $string['feedback:submit'] = 'Submit course feedback';
@@ -160,7 +160,7 @@ $string['sentiment_neutral'] = 'Okay';
 $string['sentiment_sad'] = 'Not great';
 
 // Step 2: area/category. The preset options themselves come from the
-// local_feedback/categories admin setting, not from strings here.
+// local_communications/categories admin setting, not from strings here.
 $string['category_heading'] = 'What is your feedback about?';
 $string['category_other'] = 'Other';
 $string['category_other_placeholder'] = 'Tell us what area this is about...';
@@ -245,22 +245,22 @@ $string['report_filtertopic'] = 'Topic';
 $string['report_alltopics'] = 'All topics';
 
 // Privacy.
-$string['privacy:metadata:local_feedback_submissions'] = 'Feedback submitted by users about courses.';
-$string['privacy:metadata:local_feedback_submissions:userid'] = 'The ID of the user who submitted the feedback (0 if submitted anonymously).';
-$string['privacy:metadata:local_feedback_submissions:anonymous'] = 'Whether the submission was made anonymously.';
-$string['privacy:metadata:local_feedback_submissions:courseid'] = 'The course the feedback is about.';
-$string['privacy:metadata:local_feedback_submissions:feedbacktext'] = 'The feedback text written by the user.';
-$string['privacy:metadata:local_feedback_submissions:sentiment'] = 'The sentiment (happy/neutral/sad) chosen by the user.';
-$string['privacy:metadata:local_feedback_submissions:category'] = 'The area the user said the feedback relates to (an admin-configured option, or free text they typed), if given.';
-$string['privacy:metadata:local_feedback_submissions:pageurl'] = 'The URL the user was viewing when they gave feedback.';
-$string['privacy:metadata:local_feedback_submissions:breadcrumb'] = 'The breadcrumb trail describing which page the user was viewing when they gave feedback.';
-$string['privacy:metadata:local_feedback_submissions:useragent'] = 'The browser user agent string recorded at submission time.';
-$string['privacy:metadata:local_feedback_submissions:timecreated'] = 'The time the feedback was submitted.';
-$string['privacy:metadata:local_feedback_campaign_responses'] = 'A record that a user responded to a campaign, used only to enforce that campaign\'s response limit - not the response itself, which (if submitted anonymously) is not linked back to the user anywhere else.';
-$string['privacy:metadata:local_feedback_campaign_responses:userid'] = 'The ID of the user who responded, even if their response was submitted anonymously.';
-$string['privacy:metadata:local_feedback_campaign_responses:campaignid'] = 'The campaign responded to.';
-$string['privacy:metadata:local_feedback_campaign_responses:courseid'] = 'The course the response was made under, used to scope per-course response limits.';
-$string['privacy:metadata:local_feedback_campaign_responses:timecreated'] = 'The time the response was submitted.';
+$string['privacy:metadata:local_communications_submissions'] = 'Feedback submitted by users about courses.';
+$string['privacy:metadata:local_communications_submissions:userid'] = 'The ID of the user who submitted the feedback (0 if submitted anonymously).';
+$string['privacy:metadata:local_communications_submissions:anonymous'] = 'Whether the submission was made anonymously.';
+$string['privacy:metadata:local_communications_submissions:courseid'] = 'The course the feedback is about.';
+$string['privacy:metadata:local_communications_submissions:feedbacktext'] = 'The feedback text written by the user.';
+$string['privacy:metadata:local_communications_submissions:sentiment'] = 'The sentiment (happy/neutral/sad) chosen by the user.';
+$string['privacy:metadata:local_communications_submissions:category'] = 'The area the user said the feedback relates to (an admin-configured option, or free text they typed), if given.';
+$string['privacy:metadata:local_communications_submissions:pageurl'] = 'The URL the user was viewing when they gave feedback.';
+$string['privacy:metadata:local_communications_submissions:breadcrumb'] = 'The breadcrumb trail describing which page the user was viewing when they gave feedback.';
+$string['privacy:metadata:local_communications_submissions:useragent'] = 'The browser user agent string recorded at submission time.';
+$string['privacy:metadata:local_communications_submissions:timecreated'] = 'The time the feedback was submitted.';
+$string['privacy:metadata:local_communications_campaign_responses'] = 'A record that a user responded to a campaign, used only to enforce that campaign\'s response limit - not the response itself, which (if submitted anonymously) is not linked back to the user anywhere else.';
+$string['privacy:metadata:local_communications_campaign_responses:userid'] = 'The ID of the user who responded, even if their response was submitted anonymously.';
+$string['privacy:metadata:local_communications_campaign_responses:campaignid'] = 'The campaign responded to.';
+$string['privacy:metadata:local_communications_campaign_responses:courseid'] = 'The course the response was made under, used to scope per-course response limits.';
+$string['privacy:metadata:local_communications_campaign_responses:timecreated'] = 'The time the response was submitted.';
 $string['privacy:campaignresponses'] = 'Campaign response limit records';
 $string['privacy:metadata:preference:neverask'] = 'Whether this user has asked not to be shown the feedback widget for particular campaigns.';
 $string['privacy:metadata:preference:neverask_all'] = 'Whether this user has turned off feedback requests everywhere.';

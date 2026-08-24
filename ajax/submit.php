@@ -17,7 +17,7 @@
 /**
  * AJAX endpoint that stores a feedback submission from the floating widget.
  *
- * @package     local_feedback
+ * @package     local_communications
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -42,8 +42,8 @@ try {
 
     require_login(null, false);
 
-    if (!get_config('local_feedback', 'enabled')) {
-        throw new moodle_exception('error_generic', 'local_feedback');
+    if (!get_config('local_communications', 'enabled')) {
+        throw new moodle_exception('error_generic', 'local_communications');
     }
 
     $sesskey = required_param('sesskey', PARAM_ALPHANUM);
@@ -76,7 +76,7 @@ try {
     // Course/module/section identity is always re-derived server-side, never trusted from the client.
     $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
     $context = context_course::instance($course->id);
-    require_capability('local/feedback:submit', $context);
+    require_capability('local/communications:submit', $context);
 
     $cmname = null;
     $modname = null;
@@ -105,15 +105,15 @@ try {
     // UNLESS the specific reason it's no longer live is that this user has just used up
     // its response limit, in which case the submission is actively rejected instead (the
     // whole point of a limit is to stop the extra response being recorded at all).
-    $activecampaign = \local_feedback\local\campaigns::get_active_for_context($course, $cm, $pagetype, $USER);
+    $activecampaign = \local_communications\local\campaigns::get_active_for_context($course, $cm, $pagetype, $USER);
     if ($activecampaign && $activecampaign->id == $campaignid) {
         $recordcampaignid = $activecampaign->id;
         $recordcampaignname = $activecampaign->name;
     } else {
-        $submittedcampaign = $campaignid ? \local_feedback\local\campaigns::get($campaignid) : null;
+        $submittedcampaign = $campaignid ? \local_communications\local\campaigns::get($campaignid) : null;
         if ($submittedcampaign
-            && \local_feedback\local\campaigns::has_reached_response_limit($submittedcampaign, $USER->id, $course->id)) {
-            throw new moodle_exception('error_responselimit', 'local_feedback');
+            && \local_communications\local\campaigns::has_reached_response_limit($submittedcampaign, $USER->id, $course->id)) {
+            throw new moodle_exception('error_responselimit', 'local_communications');
         }
         $recordcampaignid = 0;
         $recordcampaignname = null;
@@ -126,19 +126,19 @@ try {
     // the user was still filling in the form doesn't wrongly reject a real preset label
     // (attribution already falls back to 0 in that case; this is only checking the
     // label is real, defending against a tampered request inventing an arbitrary one).
-    $shownunder = $campaignid ? \local_feedback\local\campaigns::get($campaignid) : null;
+    $shownunder = $campaignid ? \local_communications\local\campaigns::get($campaignid) : null;
     $category = trim($category);
     if ($category !== '') {
         if ($categoryother) {
             $category = mb_substr($category, 0, 255);
-        } else if (!in_array($category, \local_feedback\local\categories::get_list_for_campaign($shownunder ?: null), true)) {
+        } else if (!in_array($category, \local_communications\local\categories::get_list_for_campaign($shownunder ?: null), true)) {
             throw new invalid_parameter_exception('Invalid category');
         }
     }
 
     $feedbacktext = trim($feedbacktext);
     if ($feedbacktext === '') {
-        echo json_encode(['success' => false, 'error' => get_string('error_empty', 'local_feedback')]);
+        echo json_encode(['success' => false, 'error' => get_string('error_empty', 'local_communications')]);
         @ob_end_flush();
         exit(0);
     }
@@ -168,12 +168,12 @@ try {
     $record->campaignname = $recordcampaignname;
     $record->timecreated = time();
 
-    $DB->insert_record('local_feedback_submissions', $record);
+    $DB->insert_record('local_communications_submissions', $record);
 
     // Recorded against the real user id regardless of $anonymous or whether this
     // campaign even has a response limit set - see campaigns::record_response().
     if ($recordcampaignid) {
-        \local_feedback\local\campaigns::record_response($recordcampaignid, $USER->id, $course->id);
+        \local_communications\local\campaigns::record_response($recordcampaignid, $USER->id, $course->id);
     }
 
     $extra = @ob_get_clean();

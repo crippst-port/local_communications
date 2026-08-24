@@ -1,12 +1,12 @@
 /* Floating feedback trigger button. */
-.local-feedback__fab-wrap {
+.local-communications__fab-wrap {
     position: fixed;
     left: .85rem;
     bottom: 1rem;
     z-index: 1040;
 }
 
-.local-feedback__fab {
+.local-communications__fab {
     display: flex;
     align-items: center;
     gap: .4rem;
@@ -21,39 +21,39 @@
     cursor: pointer;
 }
 
-.local-feedback__fab:hover,
-.local-feedback__fab:focus {
+.local-communications__fab:hover,
+.local-communications__fab:focus {
     transform: translateY(-2px);
     box-shadow: 0 1rem 2.5rem rgba(47, 111, 237, .45);
     color: #fff;
     outline: none;
 }
 
-.local-feedback__fab-icon {
+.local-communications__fab-icon {
     font-size: 1.1rem;
     line-height: 1;
 }
 
 /* Modal contents. */
-.local-feedback__modal {
+.local-communications__modal {
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
 
-.local-feedback__intro {
+.local-communications__intro {
     margin: 0 0 .75rem;
     color: #4b5563;
     font-size: .9rem;
 }
 
-.local-feedback__sentiments {
+.local-communications__sentiments {
     display: flex;
     justify-content: space-between;
     gap: .75rem;
 }
 
-.local-feedback__sentiment {
+.local-communications__sentiment {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -67,32 +67,32 @@
     transition: border-color .15s ease, transform .15s ease, background .15s ease;
 }
 
-.local-feedback__sentiment:hover,
-.local-feedback__sentiment:focus {
+.local-communications__sentiment:hover,
+.local-communications__sentiment:focus {
     border-color: #2f6fed;
     background: #f3f6ff;
     transform: translateY(-2px);
     outline: none;
 }
 
-.local-feedback__sentiment-icon {
+.local-communications__sentiment-icon {
     font-size: 2rem;
     line-height: 1;
 }
 
-.local-feedback__sentiment-label {
+.local-communications__sentiment-label {
     font-size: .85rem;
     font-weight: 600;
 }
 
-.local-feedback__neverask {
+.local-communications__neverask {
     margin: .9rem 0 0;
     color: #4b5563;
     font-size: .8rem;
     line-height: 1.4;
 }
 
-.local-feedback__neverask-link {
+.local-communications__neverask-link {
     padding: 0;
     border: none;
     background: none;
@@ -103,24 +103,24 @@
     cursor: pointer;
 }
 
-.local-feedback__neverask-link:hover,
-.local-feedback__neverask-link:focus {
+.local-communications__neverask-link:hover,
+.local-communications__neverask-link:focus {
     color: #000;
     outline: none;
 }
 
-.local-feedback__prompt {
+.local-communications__prompt {
     font-weight: 600;
     margin-bottom: .25rem;
 }
 
-.local-feedback__categories {
+.local-communications__categories {
     display: flex;
     flex-wrap: wrap;
     gap: .6rem;
 }
 
-.local-feedback__category {
+.local-communications__category {
     flex: 1 1 auto;
     min-width: 8rem;
     padding: .65rem .75rem;
@@ -133,26 +133,26 @@
     transition: border-color .15s ease, background .15s ease, transform .15s ease;
 }
 
-.local-feedback__category:hover,
-.local-feedback__category:focus {
+.local-communications__category:hover,
+.local-communications__category:focus {
     border-color: #2f6fed;
     background: #f3f6ff;
     transform: translateY(-2px);
     outline: none;
 }
 
-.local-feedback__category-other {
+.local-communications__category-other {
     margin-top: .5rem;
 }
 
-.local-feedback__input {
+.local-communications__input {
     width: 100%;
     border: 1px solid #dcdfe6;
     border-radius: .5rem;
     padding: .55rem .65rem;
 }
 
-.local-feedback__textarea {
+.local-communications__textarea {
     width: 100%;
     resize: vertical;
     border: 1px solid #dcdfe6;
@@ -160,12 +160,12 @@
     padding: .6rem;
 }
 
-.local-feedback__error {
+.local-communications__error {
     color: #b3261e;
     font-size: .875rem;
 }
 
-.local-feedback__anonymous {
+.local-communications__anonymous {
     display: flex;
     align-items: center;
     gap: .5rem;
@@ -174,7 +174,7 @@
 /* Step-scoped action buttons rendered into the modal's own footer region
    (see templates/modal_footer.mustache), rather than inline in the body,
    for clearer spacing between content and actions. */
-.local-feedback__footer-step {
+.local-communications__footer-step {
     display: flex;
     justify-content: flex-end;
     align-items: center;
@@ -182,12 +182,12 @@
     width: 100%;
 }
 
-.local-feedback__thankyou {
+.local-communications__thankyou {
     text-align: center;
     padding: 1rem 0;
 }
 
-.local-feedback__thankyou-title {
+.local-communications__thankyou-title {
     font-size: 1.1rem;
     font-weight: 700;
     margin-bottom: .35rem;
@@ -201,7 +201,7 @@
    "span 2" - always resolves against the grid's actual column count rather than
    potentially demanding an implicit extra one, so it's safe even at the 1-column mobile
    breakpoint. */
-.local-feedback__stats {
+.local-communications__stats {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
@@ -209,7 +209,7 @@
 }
 
 @media (min-width: 30rem) {
-    .local-feedback__stats {
+    .local-communications__stats {
         grid-template-columns: repeat(2, 1fr);
     }
 
@@ -218,11 +218,11 @@
        the other four cards filling a 2x2 block beside it, rather than trend being an odd
        fifth card on its own row. Left at the default 2-column layout below 30rem, where
        there's only room to stack everything in one column anyway. */
-    .local-feedback__stats--withtrend {
+    .local-communications__stats--withtrend {
         grid-template-columns: repeat(3, 1fr);
     }
 
-    .local-feedback__stats--withtrend .local-feedback__stat-value--trend {
+    .local-communications__stats--withtrend .local-communications__stat-value--trend {
         grid-row: span 2;
         display: flex;
         align-items: center;
@@ -230,7 +230,7 @@
     }
 }
 
-.local-feedback__stat-value {
+.local-communications__stat-value {
     position: relative;
     padding: .75rem 1rem 1.5rem;
     border: 1px solid #dcdfe6;
@@ -240,7 +240,7 @@
     text-align: center;
 }
 
-.local-feedback__stat-card {
+.local-communications__stat-card {
     padding: .75rem 1rem;
     border: 1px solid #dcdfe6;
     border-radius: .5rem;
@@ -248,7 +248,7 @@
 
 /* "What respondents saw" card at the top of a campaign's report - see
    report_helper::render_widget_preview(). */
-.local-feedback__widgetpreview {
+.local-communications__widgetpreview {
     padding: .75rem 1rem;
     margin-bottom: 1.25rem;
     border: 1px solid #dcdfe6;
@@ -256,64 +256,64 @@
     background: #f9fafb;
 }
 
-.local-feedback__widgetpreview-label {
+.local-communications__widgetpreview-label {
     font-size: .75rem;
     font-weight: 600;
     color: #6b7280;
     margin-bottom: .35rem;
 }
 
-.local-feedback__widgetpreview-title {
+.local-communications__widgetpreview-title {
     font-weight: 700;
     font-size: 1.05rem;
 }
 
-.local-feedback__widgetpreview-intro {
+.local-communications__widgetpreview-intro {
     margin: .35rem 0 0;
     color: #374151;
     font-size: .9rem;
 }
 
-.local-feedback__stat-card-title {
+.local-communications__stat-card-title {
     font-size: .75rem;
     font-weight: 600;
     color: #6b7280;
     margin-bottom: .5rem;
 }
 
-.local-feedback__stat-card--breakdown {
+.local-communications__stat-card--breakdown {
     grid-column: 1 / -1;
 }
 
-.local-feedback__category-lists {
+.local-communications__category-lists {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
 }
 
-.local-feedback__category-list-group {
+.local-communications__category-list-group {
     flex: 1 1 12rem;
     min-width: 12rem;
 }
 
-.local-feedback__category-list-heading {
+.local-communications__category-list-heading {
     font-size: .75rem;
     font-weight: 600;
     color: #6b7280;
     margin-bottom: .35rem;
 }
 
-.local-feedback__category-list-group--worst .local-feedback__category-list-heading {
+.local-communications__category-list-group--worst .local-communications__category-list-heading {
     color: #a3241b;
 }
 
-.local-feedback__category-list {
+.local-communications__category-list {
     list-style: none;
     margin: 0;
     padding: 0;
 }
 
-.local-feedback__category-list li {
+.local-communications__category-list li {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -322,27 +322,27 @@
     border-bottom: 1px solid #eceef1;
 }
 
-.local-feedback__category-list li:last-child {
+.local-communications__category-list li:last-child {
     border-bottom: none;
 }
 
-.local-feedback__category-list-label {
+.local-communications__category-list-label {
     font-size: .85rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.local-feedback__breakdown th a {
+.local-communications__breakdown th a {
     color: inherit;
     text-decoration: none;
 }
 
-.local-feedback__breakdown th a:hover {
+.local-communications__breakdown th a:hover {
     text-decoration: underline;
 }
 
-.local-feedback__stat-value::after {
+.local-communications__stat-value::after {
     content: attr(data-label);
     position: absolute;
     left: 0;
@@ -353,18 +353,18 @@
     color: #6b7280;
 }
 
-.local-feedback__stat-value--bad {
+.local-communications__stat-value--bad {
     border-color: #f1b3ae;
     background: #fbe4e2;
     color: #a3241b;
 }
 
-.local-feedback__stat-value--bad::after {
+.local-communications__stat-value--bad::after {
     color: #a3241b;
     opacity: .75;
 }
 
-.local-feedback__score {
+.local-communications__score {
     display: inline-block;
     padding: .2rem .55rem;
     border-radius: 999px;
@@ -373,26 +373,26 @@
     white-space: nowrap;
 }
 
-.local-feedback__score--good {
+.local-communications__score--good {
     background: #e3f6e8;
     color: #1e7b3c;
 }
 
-.local-feedback__score--okay {
+.local-communications__score--okay {
     background: #fff3d6;
     color: #8a6100;
 }
 
-.local-feedback__score--bad {
+.local-communications__score--bad {
     background: #fbe4e2;
     color: #a3241b;
 }
 
-.local-feedback__score-explain {
+.local-communications__score-explain {
     margin: .5rem 0 1rem;
 }
 
-.local-feedback__filters {
+.local-communications__filters {
     display: flex;
     align-items: center;
     gap: .5rem;
@@ -400,41 +400,41 @@
     margin-bottom: 1rem;
 }
 
-.local-feedback__trend {
+.local-communications__trend {
     display: inline-block;
     font-size: .9rem;
     font-weight: 700;
 }
 
-.local-feedback__trend--up {
+.local-communications__trend--up {
     color: #1e7b3c;
 }
 
-.local-feedback__trend--down {
+.local-communications__trend--down {
     color: #a3241b;
 }
 
-.local-feedback__trend--none {
+.local-communications__trend--none {
     color: #9ca3af;
 }
 
-.local-feedback__breakdown {
+.local-communications__breakdown {
     width: 100%;
     margin-bottom: 0;
 }
 
-.local-feedback__breakdown-more {
+.local-communications__breakdown-more {
     margin-top: .5rem;
 }
 
-.local-feedback__breakdown-more > summary {
+.local-communications__breakdown-more > summary {
     cursor: pointer;
     color: #4b5563;
     font-size: .85rem;
     margin-bottom: .5rem;
 }
 
-.local-feedback__report-text {
+.local-communications__report-text {
     max-width: 28rem;
     white-space: pre-wrap;
     word-break: break-word;

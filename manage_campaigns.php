@@ -17,7 +17,7 @@
 /**
  * Manage feedback campaigns: list, enable/disable, delete, and links to create/edit.
  *
- * @package     local_feedback
+ * @package     local_communications
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,23 +26,23 @@ require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once(__DIR__ . '/classes/local/campaigns.php');
 
-use local_feedback\local\campaigns;
+use local_communications\local\campaigns;
 
-admin_externalpage_setup('local_feedback_campaigns');
-$PAGE->requires->css('/local/feedback/styles.css');
+admin_externalpage_setup('local_communications_campaigns');
+$PAGE->requires->css('/local/communications/styles.css');
 
-// This page is reachable by anyone holding local/feedback:viewreports (see settings.php)
+// This page is reachable by anyone holding local/communications:viewreports (see settings.php)
 // so they can browse campaigns and reach their dashboards - but authoring campaigns is a
 // separate, stricter capability, checked explicitly here rather than relying on the page's
 // own (now broader) gate. $canmanage only controls which controls are rendered below; the
 // action handler still re-checks it itself before actually mutating anything.
-$canmanage = has_capability('local/feedback:managecampaigns', context_system::instance());
+$canmanage = has_capability('local/communications:managecampaigns', context_system::instance());
 
 $action = optional_param('action', '', PARAM_ALPHA);
 $id = optional_param('id', 0, PARAM_INT);
 
 if ($action && $id) {
-    require_capability('local/feedback:managecampaigns', context_system::instance());
+    require_capability('local/communications:managecampaigns', context_system::instance());
     require_sesskey();
 
     if ($action === 'toggle') {
@@ -51,91 +51,91 @@ if ($action && $id) {
         campaigns::delete($id);
     }
 
-    redirect(new moodle_url('/local/feedback/manage_campaigns.php'));
+    redirect(new moodle_url('/local/communications/manage_campaigns.php'));
 }
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('managecampaigns', 'local_feedback'));
+echo $OUTPUT->heading(get_string('managecampaigns', 'local_communications'));
 
 echo html_writer::div(
-    get_string('managecampaigns_intro', 'local_feedback'),
-    'local-feedback__campaigns-intro'
+    get_string('managecampaigns_intro', 'local_communications'),
+    'local-communications__campaigns-intro'
 );
 
 if ($canmanage) {
     echo html_writer::link(
-        new moodle_url('/local/feedback/edit_campaign.php'),
-        get_string('campaign_create', 'local_feedback'),
-        ['class' => 'btn btn-primary local-feedback__campaigns-create']
+        new moodle_url('/local/communications/edit_campaign.php'),
+        get_string('campaign_create', 'local_communications'),
+        ['class' => 'btn btn-primary local-communications__campaigns-create']
     );
 }
 
 $campaigns = campaigns::get_all();
 
 if (!$campaigns) {
-    echo $OUTPUT->notification(get_string('campaign_none', 'local_feedback'), 'info');
+    echo $OUTPUT->notification(get_string('campaign_none', 'local_communications'), 'info');
     echo $OUTPUT->footer();
     exit;
 }
 
 $table = new html_table();
 $table->head = [
-    get_string('campaign_name', 'local_feedback'),
-    get_string('campaign_status', 'local_feedback'),
-    get_string('campaign_window', 'local_feedback'),
-    get_string('campaign_targeting', 'local_feedback'),
-    get_string('campaign_responses', 'local_feedback'),
+    get_string('campaign_name', 'local_communications'),
+    get_string('campaign_status', 'local_communications'),
+    get_string('campaign_window', 'local_communications'),
+    get_string('campaign_targeting', 'local_communications'),
+    get_string('campaign_responses', 'local_communications'),
     '',
 ];
 
 $now = time();
 foreach ($campaigns as $campaign) {
-    $responsecount = $DB->count_records('local_feedback_submissions', ['campaignid' => $campaign->id]);
+    $responsecount = $DB->count_records('local_communications_submissions', ['campaignid' => $campaign->id]);
     $limitreached = !empty($campaign->maxresponses) && $responsecount >= $campaign->maxresponses;
 
     $status = $campaign->enabled
-        ? get_string('campaign_status_enabled', 'local_feedback')
-        : get_string('campaign_status_disabled', 'local_feedback');
+        ? get_string('campaign_status_enabled', 'local_communications')
+        : get_string('campaign_status_disabled', 'local_communications');
     if ($campaign->enabled && $campaign->starttime && $campaign->starttime > $now) {
-        $status = get_string('campaign_status_scheduled', 'local_feedback');
+        $status = get_string('campaign_status_scheduled', 'local_communications');
     } else if ($campaign->enabled && $campaign->endtime && $campaign->endtime < $now) {
-        $status = get_string('campaign_status_ended', 'local_feedback');
+        $status = get_string('campaign_status_ended', 'local_communications');
     } else if ($campaign->enabled && $limitreached) {
-        $status = get_string('campaign_status_limitreached', 'local_feedback');
+        $status = get_string('campaign_status_limitreached', 'local_communications');
     }
 
-    $window = get_string('campaign_window_start', 'local_feedback', $campaign->starttime ? userdate($campaign->starttime) : get_string('campaign_window_unbounded', 'local_feedback'))
+    $window = get_string('campaign_window_start', 'local_communications', $campaign->starttime ? userdate($campaign->starttime) : get_string('campaign_window_unbounded', 'local_communications'))
         . ' — '
-        . get_string('campaign_window_end', 'local_feedback', $campaign->endtime ? userdate($campaign->endtime) : get_string('campaign_window_unbounded', 'local_feedback'));
+        . get_string('campaign_window_end', 'local_communications', $campaign->endtime ? userdate($campaign->endtime) : get_string('campaign_window_unbounded', 'local_communications'));
 
     $responsedisplay = !empty($campaign->maxresponses)
-        ? get_string('campaign_responses_of_max', 'local_feedback', (object) [
+        ? get_string('campaign_responses_of_max', 'local_communications', (object) [
             'count' => $responsecount, 'max' => $campaign->maxresponses,
         ])
         : $responsecount;
 
     $actions = [];
     $actions[] = html_writer::link(
-        new moodle_url('/local/feedback/report.php', ['campaignid' => $campaign->id]),
-        get_string('campaign_viewresponses', 'local_feedback')
+        new moodle_url('/local/communications/report.php', ['campaignid' => $campaign->id]),
+        get_string('campaign_viewresponses', 'local_communications')
     );
     if ($canmanage) {
         $actions[] = html_writer::link(
-            new moodle_url('/local/feedback/edit_campaign.php', ['id' => $campaign->id]),
+            new moodle_url('/local/communications/edit_campaign.php', ['id' => $campaign->id]),
             get_string('edit')
         );
         $actions[] = html_writer::link(
-            new moodle_url('/local/feedback/manage_campaigns.php', [
+            new moodle_url('/local/communications/manage_campaigns.php', [
                 'action' => 'toggle', 'id' => $campaign->id, 'sesskey' => sesskey(),
             ]),
-            $campaign->enabled ? get_string('campaign_disable', 'local_feedback') : get_string('campaign_enable', 'local_feedback')
+            $campaign->enabled ? get_string('campaign_disable', 'local_communications') : get_string('campaign_enable', 'local_communications')
         );
         $actions[] = $OUTPUT->action_link(
-            new moodle_url('/local/feedback/manage_campaigns.php', [
+            new moodle_url('/local/communications/manage_campaigns.php', [
                 'action' => 'delete', 'id' => $campaign->id, 'sesskey' => sesskey(),
             ]),
             get_string('delete'),
-            new confirm_action(get_string('campaign_confirmdelete', 'local_feedback', format_string($campaign->name)))
+            new confirm_action(get_string('campaign_confirmdelete', 'local_communications', format_string($campaign->name)))
         );
     }
 

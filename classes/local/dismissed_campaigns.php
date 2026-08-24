@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_feedback\local;
+namespace local_communications\local;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -27,17 +27,17 @@ defined('MOODLE_INTERNAL') || die();
  * and deleted freely by admins, so there's no fixed set of preference names to
  * declare up front the way a normal user preference would.
  *
- * @package     local_feedback
+ * @package     local_communications
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class dismissed_campaigns {
 
     /** @var string The per-campaign user preference name. */
-    protected const PREF = 'local_feedback_neverask';
+    protected const PREF = 'local_communications_neverask';
 
     /** @var string The site-wide opt-out user preference name - see {@see is_global_optout()}. */
-    protected const PREF_ALL = 'local_feedback_neverask_all';
+    protected const PREF_ALL = 'local_communications_neverask_all';
 
     /**
      * Whether this user has turned off feedback requests everywhere, overriding any

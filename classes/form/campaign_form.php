@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_feedback\form;
+namespace local_communications\form;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -33,7 +33,7 @@ require_once($CFG->dirroot . '/course/lib.php'); // For get_module_types_names()
  * points, so the rest of the plugin (campaigns::get_active_for_context() and friends) only
  * ever deals with the stored newline/CSV text format, unaware these friendlier controls exist.
  *
- * @package     local_feedback
+ * @package     local_communications
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -79,104 +79,104 @@ class campaign_form extends \moodleform {
         $mform->addElement('hidden', 'id', 0);
         $mform->setType('id', PARAM_INT);
 
-        $mform->addElement('text', 'name', get_string('campaign_name', 'local_feedback'));
+        $mform->addElement('text', 'name', get_string('campaign_name', 'local_communications'));
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', get_string('required'), 'required', null, 'client');
 
-        $mform->addElement('advcheckbox', 'enabled', get_string('campaign_enabled', 'local_feedback'));
+        $mform->addElement('advcheckbox', 'enabled', get_string('campaign_enabled', 'local_communications'));
         $mform->setDefault('enabled', 1);
 
-        $mform->addElement('advcheckbox', 'coursefocused', get_string('campaign_coursefocused', 'local_feedback'));
+        $mform->addElement('advcheckbox', 'coursefocused', get_string('campaign_coursefocused', 'local_communications'));
         $mform->setDefault('coursefocused', 1);
-        $mform->addHelpButton('coursefocused', 'campaign_coursefocused', 'local_feedback');
+        $mform->addHelpButton('coursefocused', 'campaign_coursefocused', 'local_communications');
 
-        $mform->addElement('text', 'priority', get_string('campaign_priority', 'local_feedback'));
+        $mform->addElement('text', 'priority', get_string('campaign_priority', 'local_communications'));
         $mform->setType('priority', PARAM_INT);
         $mform->setDefault('priority', 0);
-        $mform->addHelpButton('priority', 'campaign_priority', 'local_feedback');
+        $mform->addHelpButton('priority', 'campaign_priority', 'local_communications');
 
         $responselimitoptions = [
-            'none' => get_string('campaign_responselimit_none', 'local_feedback'),
-            'daily' => get_string('campaign_responselimit_daily', 'local_feedback'),
-            'once' => get_string('campaign_responselimit_once', 'local_feedback'),
+            'none' => get_string('campaign_responselimit_none', 'local_communications'),
+            'daily' => get_string('campaign_responselimit_daily', 'local_communications'),
+            'once' => get_string('campaign_responselimit_once', 'local_communications'),
         ];
         $mform->addElement(
-            'select', 'responselimit', get_string('campaign_responselimit', 'local_feedback'), $responselimitoptions
+            'select', 'responselimit', get_string('campaign_responselimit', 'local_communications'), $responselimitoptions
         );
         $mform->setDefault('responselimit', 'none');
-        $mform->addHelpButton('responselimit', 'campaign_responselimit', 'local_feedback');
+        $mform->addHelpButton('responselimit', 'campaign_responselimit', 'local_communications');
 
-        $mform->addElement('text', 'maxresponses', get_string('campaign_maxresponses', 'local_feedback'), ['size' => 6]);
+        $mform->addElement('text', 'maxresponses', get_string('campaign_maxresponses', 'local_communications'), ['size' => 6]);
         $mform->setType('maxresponses', PARAM_INT);
         $mform->setDefault('maxresponses', 0);
-        $mform->addHelpButton('maxresponses', 'campaign_maxresponses', 'local_feedback');
+        $mform->addHelpButton('maxresponses', 'campaign_maxresponses', 'local_communications');
 
         $mform->addElement(
             'date_time_selector',
             'starttime',
-            get_string('campaign_starttime', 'local_feedback'),
+            get_string('campaign_starttime', 'local_communications'),
             ['optional' => true]
         );
 
         $mform->addElement(
             'date_time_selector',
             'endtime',
-            get_string('campaign_endtime', 'local_feedback'),
+            get_string('campaign_endtime', 'local_communications'),
             ['optional' => true]
         );
 
         $mform->addElement(
             'text',
             'modaltitle',
-            get_string('campaign_modaltitle', 'local_feedback'),
+            get_string('campaign_modaltitle', 'local_communications'),
             ['maxlength' => 255]
         );
         $mform->setType('modaltitle', PARAM_TEXT);
-        $mform->addHelpButton('modaltitle', 'campaign_modaltitle', 'local_feedback');
+        $mform->addHelpButton('modaltitle', 'campaign_modaltitle', 'local_communications');
 
         $mform->addElement(
             'textarea',
             'introtext',
-            get_string('campaign_introtext', 'local_feedback'),
+            get_string('campaign_introtext', 'local_communications'),
             ['rows' => 3, 'cols' => 40]
         );
         $mform->setType('introtext', PARAM_TEXT);
-        $mform->addHelpButton('introtext', 'campaign_introtext', 'local_feedback');
+        $mform->addHelpButton('introtext', 'campaign_introtext', 'local_communications');
 
         // Each input's own placeholder shows the site default it falls back to, so the
         // admin can see what they're overriding without leaving the form.
         $labelsgroup = [
             $mform->createElement('text', 'labelhappy', '', [
-                'size' => 12, 'placeholder' => get_string('sentiment_happy', 'local_feedback'),
+                'size' => 12, 'placeholder' => get_string('sentiment_happy', 'local_communications'),
             ]),
             $mform->createElement('text', 'labelneutral', '', [
-                'size' => 12, 'placeholder' => get_string('sentiment_neutral', 'local_feedback'),
+                'size' => 12, 'placeholder' => get_string('sentiment_neutral', 'local_communications'),
             ]),
             $mform->createElement('text', 'labelsad', '', [
-                'size' => 12, 'placeholder' => get_string('sentiment_sad', 'local_feedback'),
+                'size' => 12, 'placeholder' => get_string('sentiment_sad', 'local_communications'),
             ]),
         ];
         foreach (['labelhappy', 'labelneutral', 'labelsad'] as $labelfield) {
             $mform->setType($labelfield, PARAM_TEXT);
         }
         $mform->addGroup(
-            $labelsgroup, 'labelsgroup', get_string('campaign_sentimentlabels', 'local_feedback'), ['&nbsp;&nbsp;'], false
+            $labelsgroup, 'labelsgroup', get_string('campaign_sentimentlabels', 'local_communications'), ['&nbsp;&nbsp;'], false
         );
-        $mform->addHelpButton('labelsgroup', 'campaign_sentimentlabels', 'local_feedback');
+        $mform->addHelpButton('labelsgroup', 'campaign_sentimentlabels', 'local_communications');
 
         $mform->addElement(
             'textarea',
             'topics',
-            get_string('campaign_topics', 'local_feedback'),
+            get_string('campaign_topics', 'local_communications'),
             ['rows' => 4, 'cols' => 40]
         );
-        $mform->addHelpButton('topics', 'campaign_topics', 'local_feedback');
+        $mform->addHelpButton('topics', 'campaign_topics', 'local_communications');
 
-        $mform->addElement('advcheckbox', 'skiptopicstep', get_string('campaign_skiptopicstep', 'local_feedback'));
-        $mform->addHelpButton('skiptopicstep', 'campaign_skiptopicstep', 'local_feedback');
+        $mform->addElement('advcheckbox', 'skiptopicstep', get_string('campaign_skiptopicstep', 'local_communications'));
+        $mform->addHelpButton('skiptopicstep', 'campaign_skiptopicstep', 'local_communications');
         $mform->hideIf('topics', 'skiptopicstep', 'checked');
 
-        $mform->addElement('header', 'targetingheader', get_string('campaign_targetingheader', 'local_feedback'));
+        $mform->addElement('header', 'targetingheader', get_string('campaign_targetingheader', 'local_communications'));
 
         // A searchable tag picker rather than a plain multi-select: sites can easily have
         // hundreds of categories, and scrolling a native listbox to ctrl/cmd-click through
@@ -185,45 +185,45 @@ class campaign_form extends \moodleform {
         $mform->addElement(
             'autocomplete',
             'categoryids',
-            get_string('campaign_categories', 'local_feedback'),
+            get_string('campaign_categories', 'local_communications'),
             $categoryoptions,
             ['multiple' => true]
         );
-        $mform->addHelpButton('categoryids', 'campaign_categories', 'local_feedback');
+        $mform->addHelpButton('categoryids', 'campaign_categories', 'local_communications');
 
         $areagroup = [];
         foreach (array_keys(self::KEY_AREAS) as $key) {
             $areagroup[] = $mform->createElement(
-                'advcheckbox', 'page_' . $key, '', get_string('campaign_page_' . $key, 'local_feedback')
+                'advcheckbox', 'page_' . $key, '', get_string('campaign_page_' . $key, 'local_communications')
             );
         }
         $mform->addGroup(
-            $areagroup, 'pagesgroup', get_string('campaign_keyareas', 'local_feedback'), ['&nbsp;&nbsp;&nbsp;&nbsp;'], false
+            $areagroup, 'pagesgroup', get_string('campaign_keyareas', 'local_communications'), ['&nbsp;&nbsp;&nbsp;&nbsp;'], false
         );
-        $mform->addHelpButton('pagesgroup', 'campaign_keyareas', 'local_feedback');
+        $mform->addHelpButton('pagesgroup', 'campaign_keyareas', 'local_communications');
 
-        $mform->addElement('advcheckbox', 'allactivities', get_string('campaign_allactivities', 'local_feedback'));
-        $mform->addHelpButton('allactivities', 'campaign_allactivities', 'local_feedback');
+        $mform->addElement('advcheckbox', 'allactivities', get_string('campaign_allactivities', 'local_communications'));
+        $mform->addHelpButton('allactivities', 'campaign_allactivities', 'local_communications');
 
         $activitynames = get_module_types_names();
         asort($activitynames);
         $mform->addElement(
             'autocomplete',
             'activityids',
-            get_string('campaign_activities', 'local_feedback'),
+            get_string('campaign_activities', 'local_communications'),
             $activitynames,
             ['multiple' => true]
         );
-        $mform->addHelpButton('activityids', 'campaign_activities', 'local_feedback');
+        $mform->addHelpButton('activityids', 'campaign_activities', 'local_communications');
         $mform->hideIf('activityids', 'allactivities', 'checked');
 
         $mform->addElement(
             'textarea',
             'pagetypepatterns',
-            get_string('campaign_pagetypes', 'local_feedback'),
+            get_string('campaign_pagetypes', 'local_communications'),
             ['rows' => 3, 'cols' => 40]
         );
-        $mform->addHelpButton('pagetypepatterns', 'campaign_pagetypes', 'local_feedback');
+        $mform->addHelpButton('pagetypepatterns', 'campaign_pagetypes', 'local_communications');
 
         $roleoptions = [];
         foreach (get_all_roles() as $role) {
@@ -233,24 +233,24 @@ class campaign_form extends \moodleform {
         $mform->addElement(
             'select',
             'targetroles',
-            get_string('campaign_roles', 'local_feedback'),
+            get_string('campaign_roles', 'local_communications'),
             $roleoptions,
             ['multiple' => true, 'size' => min(6, count($roleoptions))]
         );
-        $mform->addHelpButton('targetroles', 'campaign_roles', 'local_feedback');
+        $mform->addHelpButton('targetroles', 'campaign_roles', 'local_communications');
 
         global $DB;
-        $cohortoptions = [0 => get_string('campaign_cohort_none', 'local_feedback')];
+        $cohortoptions = [0 => get_string('campaign_cohort_none', 'local_communications')];
         $cohortoptions += $DB->get_records_menu('cohort', null, 'name', 'id, name');
-        $mform->addElement('select', 'targetcohortid', get_string('campaign_cohort', 'local_feedback'), $cohortoptions);
+        $mform->addElement('select', 'targetcohortid', get_string('campaign_cohort', 'local_communications'), $cohortoptions);
 
         $mform->addElement(
             'textarea',
             'targetuserids',
-            get_string('campaign_users', 'local_feedback'),
+            get_string('campaign_users', 'local_communications'),
             ['rows' => 4, 'cols' => 40]
         );
-        $mform->addHelpButton('targetuserids', 'campaign_users', 'local_feedback');
+        $mform->addHelpButton('targetuserids', 'campaign_users', 'local_communications');
 
         $this->add_action_buttons();
     }
@@ -263,18 +263,18 @@ class campaign_form extends \moodleform {
         $errors = parent::validation($data, $files);
 
         if (!empty($data['starttime']) && !empty($data['endtime']) && $data['endtime'] < $data['starttime']) {
-            $errors['endtime'] = get_string('campaign_error_daterange', 'local_feedback');
+            $errors['endtime'] = get_string('campaign_error_daterange', 'local_communications');
         }
 
         if ((string) $data['maxresponses'] !== '' && (int) $data['maxresponses'] < 0) {
-            $errors['maxresponses'] = get_string('campaign_error_maxresponses', 'local_feedback');
+            $errors['maxresponses'] = get_string('campaign_error_maxresponses', 'local_communications');
         }
 
         if (trim((string) $data['targetuserids']) !== '') {
             foreach (preg_split('/\r\n|\r|\n/', $data['targetuserids']) as $line) {
                 $line = trim($line);
                 if ($line !== '' && !ctype_digit($line)) {
-                    $errors['targetuserids'] = get_string('campaign_error_userids', 'local_feedback');
+                    $errors['targetuserids'] = get_string('campaign_error_userids', 'local_communications');
                     break;
                 }
             }
@@ -339,7 +339,7 @@ class campaign_form extends \moodleform {
 
     /**
      * Converts submitted form data back into the newline/CSV text format
-     * local_feedback_campaigns actually stores.
+     * local_communications_campaigns actually stores.
      *
      * @return \stdClass
      */

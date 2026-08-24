@@ -17,7 +17,7 @@
 /**
  * Create/edit a single feedback campaign.
  *
- * @package     local_feedback
+ * @package     local_communications
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,20 +27,20 @@ require_once($CFG->libdir . '/adminlib.php');
 require_once(__DIR__ . '/classes/local/campaigns.php');
 require_once(__DIR__ . '/classes/form/campaign_form.php');
 
-use local_feedback\local\campaigns;
-use local_feedback\form\campaign_form;
+use local_communications\local\campaigns;
+use local_communications\form\campaign_form;
 
 $id = optional_param('id', 0, PARAM_INT);
 
-admin_externalpage_setup('local_feedback_campaigns');
+admin_externalpage_setup('local_communications_campaigns');
 
-// admin_externalpage_setup() above only enforces local/feedback:viewreports now (see
+// admin_externalpage_setup() above only enforces local/communications:viewreports now (see
 // settings.php) - authoring campaigns needs the stricter capability, checked explicitly
 // here rather than relying on that shared page id.
-require_capability('local/feedback:managecampaigns', context_system::instance());
+require_capability('local/communications:managecampaigns', context_system::instance());
 
-$listurl = new moodle_url('/local/feedback/manage_campaigns.php');
-$url = new moodle_url('/local/feedback/edit_campaign.php', $id ? ['id' => $id] : []);
+$listurl = new moodle_url('/local/communications/manage_campaigns.php');
+$url = new moodle_url('/local/communications/edit_campaign.php', $id ? ['id' => $id] : []);
 $PAGE->set_url($url);
 
 $campaign = null;
@@ -52,8 +52,8 @@ if ($id) {
 }
 
 $title = $campaign
-    ? get_string('campaign_edit', 'local_feedback', format_string($campaign->name))
-    : get_string('campaign_create', 'local_feedback');
+    ? get_string('campaign_edit', 'local_communications', format_string($campaign->name))
+    : get_string('campaign_create', 'local_communications');
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
 
@@ -70,7 +70,7 @@ if ($form->is_cancelled()) {
         campaigns::create($record);
     }
 
-    redirect($listurl, get_string('campaign_saved', 'local_feedback'), null, \core\output\notification::NOTIFY_SUCCESS);
+    redirect($listurl, get_string('campaign_saved', 'local_communications'), null, \core\output\notification::NOTIFY_SUCCESS);
 }
 
 if ($campaign) {

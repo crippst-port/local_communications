@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_feedback\table;
+namespace local_communications\table;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -28,7 +28,7 @@ require_once($CFG->libdir . '/tablelib.php');
  * page, not here: report.php always passes $courseid = 0 (site-wide, no restriction) and
  * course_report.php always passes a specific, capability-checked $courseid.
  *
- * @package     local_feedback
+ * @package     local_communications
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -94,15 +94,15 @@ class submissions_table extends \table_sql {
             'timecreated', 'sentiment', 'category', 'campaignname', 'coursename', 'activity', 'user', 'feedbacktext', 'page',
         ];
         $headers = [
-            get_string('report_col_time', 'local_feedback'),
-            get_string('report_col_sentiment', 'local_feedback'),
-            get_string('report_col_category', 'local_feedback'),
-            get_string('report_col_campaign', 'local_feedback'),
-            get_string('report_col_course', 'local_feedback'),
-            get_string('report_col_activity', 'local_feedback'),
-            get_string('report_col_user', 'local_feedback'),
-            get_string('report_col_feedback', 'local_feedback'),
-            get_string('report_col_page', 'local_feedback'),
+            get_string('report_col_time', 'local_communications'),
+            get_string('report_col_sentiment', 'local_communications'),
+            get_string('report_col_category', 'local_communications'),
+            get_string('report_col_campaign', 'local_communications'),
+            get_string('report_col_course', 'local_communications'),
+            get_string('report_col_activity', 'local_communications'),
+            get_string('report_col_user', 'local_communications'),
+            get_string('report_col_feedback', 'local_communications'),
+            get_string('report_col_page', 'local_communications'),
         ];
 
         if ($hidecoursecolumn) {
@@ -163,7 +163,7 @@ class submissions_table extends \table_sql {
         $this->set_sql(
             'id, userid, anonymous, courseid, coursename, cmid, cmname, modname, sectionname,
              sentiment, category, feedbacktext, pageurl, pagetype, breadcrumb, pagetitle, campaignid, campaignname, timecreated',
-            '{local_feedback_submissions}',
+            '{local_communications_submissions}',
             implode(' AND ', $where),
             $params
         );
@@ -183,7 +183,7 @@ class submissions_table extends \table_sql {
      */
     public function col_sentiment($row): string {
         $icon = self::SENTIMENT_ICONS[$row->sentiment] ?? '';
-        $label = $this->sentimentlabels[$row->sentiment] ?? get_string('sentiment_' . $row->sentiment, 'local_feedback');
+        $label = $this->sentimentlabels[$row->sentiment] ?? get_string('sentiment_' . $row->sentiment, 'local_communications');
         return $icon . ' ' . $label;
     }
 
@@ -204,7 +204,7 @@ class submissions_table extends \table_sql {
             return '-';
         }
 
-        return $row->campaignname ? s($row->campaignname) : get_string('campaign_deleted', 'local_feedback');
+        return $row->campaignname ? s($row->campaignname) : get_string('campaign_deleted', 'local_communications');
     }
 
     /**
@@ -237,12 +237,12 @@ class submissions_table extends \table_sql {
      */
     public function col_user($row): string {
         if ($row->anonymous || empty($row->userid)) {
-            return get_string('report_anonymous', 'local_feedback');
+            return get_string('report_anonymous', 'local_communications');
         }
 
         $user = \core_user::get_user($row->userid);
         if (!$user) {
-            return get_string('report_anonymous', 'local_feedback');
+            return get_string('report_anonymous', 'local_communications');
         }
 
         $url = new \moodle_url('/user/profile.php', ['id' => $row->userid]);
@@ -254,7 +254,7 @@ class submissions_table extends \table_sql {
      * @return string
      */
     public function col_feedbacktext($row): string {
-        return \html_writer::tag('div', s($row->feedbacktext), ['class' => 'local-feedback__report-text']);
+        return \html_writer::tag('div', s($row->feedbacktext), ['class' => 'local-communications__report-text']);
     }
 
     /**
@@ -275,7 +275,7 @@ class submissions_table extends \table_sql {
 
         return \html_writer::link(
             $row->pageurl,
-            format_string($label ?: get_string('report_viewpage', 'local_feedback')),
+            format_string($label ?: get_string('report_viewpage', 'local_communications')),
             ['target' => '_blank', 'rel' => 'noopener']
         );
     }

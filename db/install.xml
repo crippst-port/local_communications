@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/feedback/db" VERSION="20260821" COMMENT="XMLDB file for Moodle local/feedback"
+<XMLDB PATH="local/communications/db" VERSION="20260824" COMMENT="XMLDB file for Moodle local/communications"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="local_feedback_submissions" COMMENT="Student feedback submitted about a course via the floating feedback widget">
+    <TABLE NAME="local_communications_submissions" COMMENT="Student feedback submitted about a course via the floating feedback widget">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 when the submitter chose to remain anonymous"/>
@@ -42,7 +42,7 @@
         <INDEX NAME="campaignid" UNIQUE="false" FIELDS="campaignid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_feedback_campaigns" COMMENT="Admin-configured feedback campaigns: scoped targeting and scheduling for the floating feedback widget">
+    <TABLE NAME="local_communications_campaigns" COMMENT="Admin-configured feedback campaigns: scoped targeting and scheduling for the floating feedback widget">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
@@ -52,7 +52,7 @@
         <FIELD NAME="priority" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Lower value takes precedence when more than one campaign matches the same page/user"/>
         <FIELD NAME="starttime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 = no lower bound"/>
         <FIELD NAME="endtime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 = no upper bound"/>
-        <FIELD NAME="topics" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Newline list of this campaign's own feedback topic labels; empty = fall back to the site-wide local_feedback/categories setting"/>
+        <FIELD NAME="topics" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Newline list of this campaign's own feedback topic labels; empty = fall back to the site-wide local_communications/categories setting"/>
         <FIELD NAME="skiptopicstep" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Skip the topic/area step entirely, going straight from the sentiment buttons to the comment box"/>
         <FIELD NAME="labelhappy" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Overrides the text shown under the happy sentiment face for this campaign; empty falls back to the sentiment_happy language string"/>
         <FIELD NAME="labelneutral" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Overrides the text shown under the neutral sentiment face for this campaign; empty falls back to the sentiment_neutral language string"/>
@@ -76,7 +76,7 @@
         <INDEX NAME="enabled" UNIQUE="false" FIELDS="enabled"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_feedback_campaign_responses" COMMENT="Enforces a campaign's response limit: one row per submission attempt that was actually recorded, keyed by the real user id even when that submission itself was anonymous - never exposed in reports, purely an internal rate-limit ledger">
+    <TABLE NAME="local_communications_campaign_responses" COMMENT="Enforces a campaign's response limit: one row per submission attempt that was actually recorded, keyed by the real user id even when that submission itself was anonymous - never exposed in reports, purely an internal rate-limit ledger">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="campaignid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_feedback\privacy;
+namespace local_communications\privacy;
 
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\approved_contextlist;
@@ -24,18 +24,18 @@ use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
 
 /**
- * Privacy provider for local_feedback.
+ * Privacy provider for local_communications.
  *
  * Anonymous submissions (userid = 0) are, by design, not linked back to any user in
- * local_feedback_submissions and are therefore not returned or affected by any request
+ * local_communications_submissions and are therefore not returned or affected by any request
  * against that table. However, a campaign with a response limit needs to know a real
- * user submitted even when they chose to stay anonymous - local_feedback_campaign_responses
+ * user submitted even when they chose to stay anonymous - local_communications_campaign_responses
  * records exactly that (which user, which campaign, when - nothing about the response
  * itself) purely to enforce the limit, and IS personal data: it's handled here at
  * CONTEXT_SYSTEM, separately from the course-scoped submissions handling below, since
  * it isn't tied to any single course.
  *
- * @package     local_feedback
+ * @package     local_communications
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -53,40 +53,40 @@ class provider implements
      */
     public static function get_metadata(collection $collection): collection {
         $collection->add_user_preference(
-            'local_feedback_neverask',
+            'local_communications_neverask',
             'privacy:metadata:preference:neverask'
         );
         $collection->add_user_preference(
-            'local_feedback_neverask_all',
+            'local_communications_neverask_all',
             'privacy:metadata:preference:neverask_all'
         );
 
         $collection->add_database_table(
-            'local_feedback_submissions',
+            'local_communications_submissions',
             [
-                'userid' => 'privacy:metadata:local_feedback_submissions:userid',
-                'anonymous' => 'privacy:metadata:local_feedback_submissions:anonymous',
-                'courseid' => 'privacy:metadata:local_feedback_submissions:courseid',
-                'sentiment' => 'privacy:metadata:local_feedback_submissions:sentiment',
-                'category' => 'privacy:metadata:local_feedback_submissions:category',
-                'feedbacktext' => 'privacy:metadata:local_feedback_submissions:feedbacktext',
-                'pageurl' => 'privacy:metadata:local_feedback_submissions:pageurl',
-                'breadcrumb' => 'privacy:metadata:local_feedback_submissions:breadcrumb',
-                'useragent' => 'privacy:metadata:local_feedback_submissions:useragent',
-                'timecreated' => 'privacy:metadata:local_feedback_submissions:timecreated',
+                'userid' => 'privacy:metadata:local_communications_submissions:userid',
+                'anonymous' => 'privacy:metadata:local_communications_submissions:anonymous',
+                'courseid' => 'privacy:metadata:local_communications_submissions:courseid',
+                'sentiment' => 'privacy:metadata:local_communications_submissions:sentiment',
+                'category' => 'privacy:metadata:local_communications_submissions:category',
+                'feedbacktext' => 'privacy:metadata:local_communications_submissions:feedbacktext',
+                'pageurl' => 'privacy:metadata:local_communications_submissions:pageurl',
+                'breadcrumb' => 'privacy:metadata:local_communications_submissions:breadcrumb',
+                'useragent' => 'privacy:metadata:local_communications_submissions:useragent',
+                'timecreated' => 'privacy:metadata:local_communications_submissions:timecreated',
             ],
-            'privacy:metadata:local_feedback_submissions'
+            'privacy:metadata:local_communications_submissions'
         );
 
         $collection->add_database_table(
-            'local_feedback_campaign_responses',
+            'local_communications_campaign_responses',
             [
-                'userid' => 'privacy:metadata:local_feedback_campaign_responses:userid',
-                'campaignid' => 'privacy:metadata:local_feedback_campaign_responses:campaignid',
-                'courseid' => 'privacy:metadata:local_feedback_campaign_responses:courseid',
-                'timecreated' => 'privacy:metadata:local_feedback_campaign_responses:timecreated',
+                'userid' => 'privacy:metadata:local_communications_campaign_responses:userid',
+                'campaignid' => 'privacy:metadata:local_communications_campaign_responses:campaignid',
+                'courseid' => 'privacy:metadata:local_communications_campaign_responses:courseid',
+                'timecreated' => 'privacy:metadata:local_communications_campaign_responses:timecreated',
             ],
-            'privacy:metadata:local_feedback_campaign_responses'
+            'privacy:metadata:local_communications_campaign_responses'
         );
 
         return $collection;
@@ -94,7 +94,7 @@ class provider implements
 
     /**
      * Export this user's "don't ask me again" campaign opt-outs, by campaign name -
-     * a user preference (see \local_feedback\local\dismissed_campaigns), not tied to
+     * a user preference (see \local_communications\local\dismissed_campaigns), not tied to
      * any single course/campaign context, so exported here rather than from
      * export_user_data().
      *
@@ -102,28 +102,28 @@ class provider implements
      */
     public static function export_user_preferences(int $userid) {
         \core_privacy\local\request\writer::export_user_preference(
-            'local_feedback',
+            'local_communications',
             'neverask_all',
-            \local_feedback\local\dismissed_campaigns::is_global_optout($userid) ? get_string('yes') : get_string('no'),
-            get_string('privacy:metadata:preference:neverask_all', 'local_feedback')
+            \local_communications\local\dismissed_campaigns::is_global_optout($userid) ? get_string('yes') : get_string('no'),
+            get_string('privacy:metadata:preference:neverask_all', 'local_communications')
         );
 
-        $ids = \local_feedback\local\dismissed_campaigns::get_ids($userid);
+        $ids = \local_communications\local\dismissed_campaigns::get_ids($userid);
         if (empty($ids)) {
             return;
         }
 
         $names = [];
         foreach ($ids as $campaignid) {
-            $campaign = \local_feedback\local\campaigns::get($campaignid);
-            $names[] = $campaign ? format_string($campaign->name) : get_string('campaign_deleted', 'local_feedback');
+            $campaign = \local_communications\local\campaigns::get($campaignid);
+            $names[] = $campaign ? format_string($campaign->name) : get_string('campaign_deleted', 'local_communications');
         }
 
         \core_privacy\local\request\writer::export_user_preference(
-            'local_feedback',
+            'local_communications',
             'neverask',
             implode(', ', $names),
-            get_string('privacy:metadata:preference:neverask', 'local_feedback')
+            get_string('privacy:metadata:preference:neverask', 'local_communications')
         );
     }
 
@@ -139,7 +139,7 @@ class provider implements
         $contextlist = new contextlist();
 
         $sql = "SELECT ctx.id
-                  FROM {local_feedback_submissions} lfs
+                  FROM {local_communications_submissions} lfs
                   JOIN {context} ctx ON ctx.instanceid = lfs.courseid AND ctx.contextlevel = :contextcourse
                  WHERE lfs.userid = :userid AND lfs.anonymous = 0";
 
@@ -148,7 +148,7 @@ class provider implements
             'userid' => $userid,
         ]);
 
-        if ($DB->record_exists('local_feedback_campaign_responses', ['userid' => $userid])) {
+        if ($DB->record_exists('local_communications_campaign_responses', ['userid' => $userid])) {
             $contextlist->add_system_context();
         }
 
@@ -165,12 +165,12 @@ class provider implements
 
         if ($context->contextlevel === CONTEXT_COURSE) {
             $sql = "SELECT userid
-                      FROM {local_feedback_submissions}
+                      FROM {local_communications_submissions}
                      WHERE courseid = :courseid AND anonymous = 0";
 
             $userlist->add_from_sql('userid', $sql, ['courseid' => $context->instanceid]);
         } else if ($context->contextlevel === CONTEXT_SYSTEM) {
-            $userlist->add_from_sql('userid', 'SELECT userid FROM {local_feedback_campaign_responses}', []);
+            $userlist->add_from_sql('userid', 'SELECT userid FROM {local_communications_campaign_responses}', []);
         }
     }
 
@@ -186,7 +186,7 @@ class provider implements
 
         foreach ($contextlist->get_contexts() as $context) {
             if ($context->contextlevel === CONTEXT_COURSE) {
-                $records = $DB->get_records('local_feedback_submissions', [
+                $records = $DB->get_records('local_communications_submissions', [
                     'courseid' => $context->instanceid,
                     'userid' => $user->id,
                     'anonymous' => 0,
@@ -212,18 +212,18 @@ class provider implements
                 }
 
                 writer::with_context($context)->export_data(
-                    [get_string('pluginname', 'local_feedback')],
+                    [get_string('pluginname', 'local_communications')],
                     (object) ['submissions' => $data]
                 );
             } else if ($context->contextlevel === CONTEXT_SYSTEM) {
-                $responses = $DB->get_records('local_feedback_campaign_responses', ['userid' => $user->id]);
+                $responses = $DB->get_records('local_communications_campaign_responses', ['userid' => $user->id]);
                 if (empty($responses)) {
                     continue;
                 }
 
                 $data = [];
                 foreach ($responses as $response) {
-                    $campaignname = $DB->get_field('local_feedback_campaigns', 'name', ['id' => $response->campaignid]);
+                    $campaignname = $DB->get_field('local_communications_campaigns', 'name', ['id' => $response->campaignid]);
                     $coursename = $DB->get_field('course', 'fullname', ['id' => $response->courseid]);
                     $data[] = (object) [
                         'campaignname' => $campaignname !== false ? $campaignname : null,
@@ -233,7 +233,7 @@ class provider implements
                 }
 
                 writer::with_context($context)->export_data(
-                    [get_string('pluginname', 'local_feedback'), get_string('privacy:campaignresponses', 'local_feedback')],
+                    [get_string('pluginname', 'local_communications'), get_string('privacy:campaignresponses', 'local_communications')],
                     (object) ['responses' => $data]
                 );
             }
@@ -249,9 +249,9 @@ class provider implements
         global $DB;
 
         if ($context->contextlevel === CONTEXT_COURSE) {
-            $DB->delete_records('local_feedback_submissions', ['courseid' => $context->instanceid]);
+            $DB->delete_records('local_communications_submissions', ['courseid' => $context->instanceid]);
         } else if ($context->contextlevel === CONTEXT_SYSTEM) {
-            $DB->delete_records('local_feedback_campaign_responses');
+            $DB->delete_records('local_communications_campaign_responses');
         }
     }
 
@@ -267,13 +267,13 @@ class provider implements
 
         foreach ($contextlist->get_contexts() as $context) {
             if ($context->contextlevel === CONTEXT_COURSE) {
-                $DB->delete_records('local_feedback_submissions', [
+                $DB->delete_records('local_communications_submissions', [
                     'courseid' => $context->instanceid,
                     'userid' => $user->id,
                     'anonymous' => 0,
                 ]);
             } else if ($context->contextlevel === CONTEXT_SYSTEM) {
-                $DB->delete_records('local_feedback_campaign_responses', ['userid' => $user->id]);
+                $DB->delete_records('local_communications_campaign_responses', ['userid' => $user->id]);
             }
         }
     }
@@ -290,7 +290,7 @@ class provider implements
 
         if ($context->contextlevel === CONTEXT_COURSE) {
             foreach ($userlist->get_userids() as $userid) {
-                $DB->delete_records('local_feedback_submissions', [
+                $DB->delete_records('local_communications_submissions', [
                     'courseid' => $context->instanceid,
                     'userid' => $userid,
                     'anonymous' => 0,
@@ -298,7 +298,7 @@ class provider implements
             }
         } else if ($context->contextlevel === CONTEXT_SYSTEM) {
             foreach ($userlist->get_userids() as $userid) {
-                $DB->delete_records('local_feedback_campaign_responses', ['userid' => $userid]);
+                $DB->delete_records('local_communications_campaign_responses', ['userid' => $userid]);
             }
         }
     }

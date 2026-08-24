@@ -14,16 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_feedback;
+namespace local_communications;
 
 use core\hook\output\before_footer_html_generation;
 use core\hook\output\before_standard_head_html_generation;
-use local_feedback\local\campaigns;
+use local_communications\local\campaigns;
 
 /**
- * Hook callback handlers for local_feedback.
+ * Hook callback handlers for local_communications.
  *
- * @package     local_feedback
+ * @package     local_communications
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -37,7 +37,7 @@ class hook_callbacks {
     protected static function get_display_context(): ?\context_course {
         global $PAGE, $COURSE;
 
-        if (!get_config('local_feedback', 'enabled')) {
+        if (!get_config('local_communications', 'enabled')) {
             return null;
         }
 
@@ -46,7 +46,7 @@ class hook_callbacks {
         }
 
         // Never show the widget on the plugin's own admin report page.
-        if (strpos((string) $PAGE->pagetype, 'local-feedback') === 0) {
+        if (strpos((string) $PAGE->pagetype, 'local-communications') === 0) {
             return null;
         }
 
@@ -60,7 +60,7 @@ class hook_callbacks {
         }
 
         $context = \context_course::instance($COURSE->id, IGNORE_MISSING);
-        if (!$context || !has_capability('local/feedback:submit', $context)) {
+        if (!$context || !has_capability('local/communications:submit', $context)) {
             return null;
         }
 
@@ -125,7 +125,7 @@ class hook_callbacks {
             return;
         }
 
-        $PAGE->requires->css('/local/feedback/styles.css');
+        $PAGE->requires->css('/local/communications/styles.css');
     }
 
     /**
@@ -158,7 +158,7 @@ class hook_callbacks {
             'pagetype' => (string) $PAGE->pagetype,
             'pageurl' => (string) $PAGE->url->out(false),
             'breadcrumb' => self::get_breadcrumb_trail(),
-            'categories' => \local_feedback\local\categories::get_list_for_campaign($campaign),
+            'categories' => \local_communications\local\categories::get_list_for_campaign($campaign),
         ];
 
         $PAGE->requires->strings_for_js([
@@ -188,14 +188,14 @@ class hook_callbacks {
             'continue',
             'neverask_prefix',
             'neverask_linktext',
-        ], 'local_feedback');
+        ], 'local_communications');
 
-        $html = $OUTPUT->render_from_template('local_feedback/floating_button', [
-            'triggerlabel' => get_string('triggerlabel', 'local_feedback'),
-            'triggeraria' => get_string('triggeraria', 'local_feedback'),
+        $html = $OUTPUT->render_from_template('local_communications/floating_button', [
+            'triggerlabel' => get_string('triggerlabel', 'local_communications'),
+            'triggeraria' => get_string('triggeraria', 'local_communications'),
         ]);
         $hook->add_html($html);
 
-        $PAGE->requires->js_call_amd('local_feedback/app', 'init', [$params]);
+        $PAGE->requires->js_call_amd('local_communications/app', 'init', [$params]);
     }
 }

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_feedback\table;
+namespace local_communications\table;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -34,7 +34,7 @@ require_once($CFG->libdir . '/tablelib.php');
  * when a different cut is more useful (e.g. "most happy responses" by volume).
  * Each row drills down into that course's own feedback via course_report.php.
  *
- * @package     local_feedback
+ * @package     local_communications
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -57,7 +57,7 @@ class courses_summary_table extends \table_sql {
      * shift in sentiment within that window shows as an up/down arrow next to the score.
      * Courses with fewer than this many responses in total have no arrow - not enough
      * recent history to call a direction rather than noise. Overridable via the
-     * local_feedback/trendwindow admin setting - see {@see get_trend_window()}.
+     * local_communications/trendwindow admin setting - see {@see get_trend_window()}.
      */
     public const TREND_WINDOW = 10;
 
@@ -69,7 +69,7 @@ class courses_summary_table extends \table_sql {
 
     /**
      * How many of a course's most recent responses form this instance's trend window.
-     * Resolved once in the constructor from the local_feedback/trendwindow admin
+     * Resolved once in the constructor from the local_communications/trendwindow admin
      * setting, so col_trend() and the SQL built here always agree.
      */
     protected int $trendwindow;
@@ -121,13 +121,13 @@ class courses_summary_table extends \table_sql {
 
         $columns = ['coursename', 'happycount', 'neutralcount', 'sadcount', 'totalcount', 'avgscore', 'trend'];
         $headers = [
-            get_string('report_col_course', 'local_feedback'),
-            '😊 ' . ($sentimentlabels['happy'] ?? get_string('sentiment_happy', 'local_feedback')),
-            '😐 ' . ($sentimentlabels['neutral'] ?? get_string('sentiment_neutral', 'local_feedback')),
-            '😞 ' . ($sentimentlabels['sad'] ?? get_string('sentiment_sad', 'local_feedback')),
-            get_string('report_col_total', 'local_feedback'),
-            get_string('report_col_avgscore', 'local_feedback'),
-            get_string('report_col_trend', 'local_feedback'),
+            get_string('report_col_course', 'local_communications'),
+            '😊 ' . ($sentimentlabels['happy'] ?? get_string('sentiment_happy', 'local_communications')),
+            '😐 ' . ($sentimentlabels['neutral'] ?? get_string('sentiment_neutral', 'local_communications')),
+            '😞 ' . ($sentimentlabels['sad'] ?? get_string('sentiment_sad', 'local_communications')),
+            get_string('report_col_total', 'local_communications'),
+            get_string('report_col_avgscore', 'local_communications'),
+            get_string('report_col_trend', 'local_communications'),
         ];
 
         if (!$downloading) {
@@ -198,7 +198,7 @@ class courses_summary_table extends \table_sql {
                             ELSE 0
                         END AS score,
                         ROW_NUMBER() OVER (PARTITION BY courseid ORDER BY timecreated DESC) AS rn
-                     FROM {local_feedback_submissions}$submissionswhere) scoredsubmissions
+                     FROM {local_communications_submissions}$submissionswhere) scoredsubmissions
                  GROUP BY courseid, coursename) coursestats) feedbacksummary";
 
         // Only join out to {course} when actually filtering by category - a course
@@ -254,7 +254,7 @@ class courses_summary_table extends \table_sql {
     }
 
     /**
-     * How many recent responses form the trend window, from the local_feedback/trendwindow
+     * How many recent responses form the trend window, from the local_communications/trendwindow
      * admin setting. Falls back to {@see TREND_WINDOW} if the setting is unset or has been
      * left in an unusable state (non-numeric, or too small to split into two halves) - an
      * admin fat-fingering the field shouldn't break the report.
@@ -262,7 +262,7 @@ class courses_summary_table extends \table_sql {
      * @return int
      */
     public static function get_trend_window(): int {
-        $configured = get_config('local_feedback', 'trendwindow');
+        $configured = get_config('local_communications', 'trendwindow');
         $window = (int) $configured;
         if ($window < 2) {
             return self::TREND_WINDOW;
@@ -330,7 +330,7 @@ class courses_summary_table extends \table_sql {
 
         return \html_writer::span(
             number_format($score, 1) . ' / ' . max(self::SCORE_POINTS),
-            'local-feedback__score local-feedback__score--' . self::score_tier($score)
+            'local-communications__score local-communications__score--' . self::score_tier($score)
         );
     }
 
@@ -360,8 +360,8 @@ class courses_summary_table extends \table_sql {
      */
     public static function render_trend_indicator(\stdClass $row, int $window): string {
         if ((int) $row->totalcount < $window) {
-            $label = get_string('report_trend_nodata', 'local_feedback', $window);
-            return \html_writer::span('–', 'local-feedback__trend local-feedback__trend--none', [
+            $label = get_string('report_trend_nodata', 'local_communications', $window);
+            return \html_writer::span('–', 'local-communications__trend local-communications__trend--none', [
                 'title' => $label,
                 'aria-label' => $label,
             ]);
@@ -375,16 +375,16 @@ class courses_summary_table extends \table_sql {
 
         $trend = self::trend_direction($row);
         if ($trend === '') {
-            $label = get_string('report_trend_flat', 'local_feedback', $a);
-            return \html_writer::span('–', 'local-feedback__trend local-feedback__trend--none', [
+            $label = get_string('report_trend_flat', 'local_communications', $a);
+            return \html_writer::span('–', 'local-communications__trend local-communications__trend--none', [
                 'title' => $label,
                 'aria-label' => $label,
             ]);
         }
 
         $arrow = $trend === 'up' ? '▲' : '▼';
-        $label = get_string('report_trend_' . $trend, 'local_feedback', $a);
-        return \html_writer::span($arrow, 'local-feedback__trend local-feedback__trend--' . $trend, [
+        $label = get_string('report_trend_' . $trend, 'local_communications', $a);
+        return \html_writer::span($arrow, 'local-communications__trend local-communications__trend--' . $trend, [
             'title' => $label,
             'aria-label' => $label,
         ]);
@@ -396,8 +396,8 @@ class courses_summary_table extends \table_sql {
      */
     public function col_actions($row): string {
         $url = new \moodle_url(
-            '/local/feedback/course_report.php', ['courseid' => $row->courseid, 'campaignid' => $this->campaignid]
+            '/local/communications/course_report.php', ['courseid' => $row->courseid, 'campaignid' => $this->campaignid]
         );
-        return \html_writer::link($url, get_string('report_viewfeedback', 'local_feedback'), ['class' => 'btn btn-secondary btn-sm']);
+        return \html_writer::link($url, get_string('report_viewfeedback', 'local_communications'), ['class' => 'btn btn-secondary btn-sm']);
     }
 }

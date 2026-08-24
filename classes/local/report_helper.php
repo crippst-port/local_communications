@@ -14,9 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_feedback\local;
+namespace local_communications\local;
 
-use local_feedback\table\courses_summary_table;
+use local_communications\table\courses_summary_table;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -34,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
  * render_widget_preview() draws the "what respondents saw" card - the campaign's
  * effective modal title and intro text.
  *
- * @package     local_feedback
+ * @package     local_communications
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -61,15 +61,15 @@ class report_helper {
      * @return string
      */
     public static function render_widget_preview(\stdClass $campaign): string {
-        $title = $campaign->modaltitle ?: get_string('modaltitle', 'local_feedback');
+        $title = $campaign->modaltitle ?: get_string('modaltitle', 'local_communications');
 
-        $out = \html_writer::div(get_string('report_widgetpreview', 'local_feedback'), 'local-feedback__widgetpreview-label');
-        $out .= \html_writer::div(format_string($title), 'local-feedback__widgetpreview-title');
+        $out = \html_writer::div(get_string('report_widgetpreview', 'local_communications'), 'local-communications__widgetpreview-label');
+        $out .= \html_writer::div(format_string($title), 'local-communications__widgetpreview-title');
         if (!empty($campaign->introtext)) {
-            $out .= \html_writer::tag('p', s($campaign->introtext), ['class' => 'local-feedback__widgetpreview-intro']);
+            $out .= \html_writer::tag('p', s($campaign->introtext), ['class' => 'local-communications__widgetpreview-intro']);
         }
 
-        return \html_writer::div($out, 'local-feedback__widgetpreview');
+        return \html_writer::div($out, 'local-communications__widgetpreview');
     }
 
     /**
@@ -127,13 +127,13 @@ class report_helper {
 
         $out = '';
         if ($best) {
-            $out .= self::build_mini_list($best, get_string('report_topperforming', 'local_feedback'), 'best');
+            $out .= self::build_mini_list($best, get_string('report_topperforming', 'local_communications'), 'best');
         }
         if ($worst) {
-            $out .= self::build_mini_list($worst, get_string('report_lowscoring', 'local_feedback'), 'worst');
+            $out .= self::build_mini_list($worst, get_string('report_lowscoring', 'local_communications'), 'worst');
         }
 
-        return \html_writer::div($out, 'local-feedback__category-lists');
+        return \html_writer::div($out, 'local-communications__category-lists');
     }
 
     /**
@@ -147,14 +147,14 @@ class report_helper {
         foreach ($rows as $row) {
             $items .= \html_writer::tag(
                 'li',
-                \html_writer::span($row->label, 'local-feedback__category-list-label') . self::score_pill($row)
+                \html_writer::span($row->label, 'local-communications__category-list-label') . self::score_pill($row)
             );
         }
 
         return \html_writer::div(
-            \html_writer::div($heading, 'local-feedback__category-list-heading')
-            . \html_writer::tag('ul', $items, ['class' => 'local-feedback__category-list']),
-            'local-feedback__category-list-group local-feedback__category-list-group--' . $modifier
+            \html_writer::div($heading, 'local-communications__category-list-heading')
+            . \html_writer::tag('ul', $items, ['class' => 'local-communications__category-list']),
+            'local-communications__category-list-group local-communications__category-list-group--' . $modifier
         );
     }
 
@@ -170,9 +170,9 @@ class report_helper {
      */
     protected static function build_full_table(array $rows, \moodle_url $baseurl, string $sort, string $dir): string {
         $columns = [
-            'category' => get_string('report_col_coursecategory', 'local_feedback'),
-            'total' => get_string('report_col_total', 'local_feedback'),
-            'score' => get_string('report_col_avgscore', 'local_feedback'),
+            'category' => get_string('report_col_coursecategory', 'local_communications'),
+            'total' => get_string('report_col_total', 'local_communications'),
+            'score' => get_string('report_col_avgscore', 'local_communications'),
         ];
 
         $sorted = $rows;
@@ -188,7 +188,7 @@ class report_helper {
         }
 
         $table = new \html_table();
-        $table->attributes['class'] = 'generaltable local-feedback__breakdown';
+        $table->attributes['class'] = 'generaltable local-communications__breakdown';
         $table->head = [];
         foreach ($columns as $key => $label) {
             $newdir = ($sort === $key && $dir === 'asc') ? 'desc' : 'asc';
@@ -206,12 +206,12 @@ class report_helper {
 
         // A sort click is a full page reload - without forcing this open on a non-default
         // sort, the admin's click would re-collapse the very table they just sorted.
-        $attributes = ['class' => 'local-feedback__breakdown-more'];
+        $attributes = ['class' => 'local-communications__breakdown-more'];
         if ($sort !== 'score' || $dir !== 'asc') {
             $attributes['open'] = 'open';
         }
 
-        $summary = \html_writer::tag('summary', get_string('report_viewall', 'local_feedback', count($rows)));
+        $summary = \html_writer::tag('summary', get_string('report_viewall', 'local_communications', count($rows)));
 
         return \html_writer::tag('details', $summary . \html_writer::table($table), $attributes);
     }
@@ -224,7 +224,7 @@ class report_helper {
         $score = (float) $row->avgscore;
         return \html_writer::span(
             number_format($score, 1) . ' / ' . max(courses_summary_table::SCORE_POINTS),
-            'local-feedback__score local-feedback__score--' . courses_summary_table::score_tier($score)
+            'local-communications__score local-communications__score--' . courses_summary_table::score_tier($score)
         );
     }
 }

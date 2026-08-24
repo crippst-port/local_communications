@@ -17,15 +17,15 @@
 /**
  * Plugin version and other meta-data are defined here.
  *
- * @package     local_feedback
+ * @package     local_communications
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'local_feedback';
-$plugin->release = '0.9.0';
-$plugin->version = 2026082112;
+$plugin->component = 'local_communications';
+$plugin->release = '1.0.0';
+$plugin->version = 2026082401;
 $plugin->requires = 2024100708;
 $plugin->maturity = MATURITY_ALPHA;

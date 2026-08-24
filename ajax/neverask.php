@@ -19,7 +19,7 @@
  * floating widget - records that this user never wants to see this campaign again.
  * A user can undo this later from their profile - see preferences.php.
  *
- * @package     local_feedback
+ * @package     local_communications
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -51,7 +51,7 @@ try {
 
     $campaignid = required_param('campaignid', PARAM_INT);
     if ($campaignid > 0) {
-        \local_feedback\local\dismissed_campaigns::dismiss($campaignid, $USER->id);
+        \local_communications\local\dismissed_campaigns::dismiss($campaignid, $USER->id);
     }
 
     $extra = @ob_get_clean();

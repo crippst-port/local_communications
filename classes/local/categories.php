@@ -14,18 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_feedback\local;
+namespace local_communications\local;
 
 /**
  * Reads the list of feedback topic labels a submitter can tag their feedback with.
  *
  * Every campaign can set its own list; a campaign that leaves it empty falls back to
- * the site-wide local_feedback/categories admin setting, so existing campaigns (and
+ * the site-wide local_communications/categories admin setting, so existing campaigns (and
  * sites with only the migrated "Default" campaign) keep working unchanged. Shared by
  * hook_callbacks (to populate the widget's buttons) and ajax/submit.php (to validate a
  * non-"Other" submission against the list actually shown), so the two never drift apart.
  *
- * @package     local_feedback
+ * @package     local_communications
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -40,7 +40,7 @@ class categories {
      * @return string[]
      */
     public static function get_list(): array {
-        $raw = (string) get_config('local_feedback', 'categories');
+        $raw = (string) get_config('local_communications', 'categories');
 
         return self::parse($raw) ?: self::DEFAULTS;
     }

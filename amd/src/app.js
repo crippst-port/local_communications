@@ -17,7 +17,7 @@
  * Floating course feedback widget: happy/neutral/sad -> area (optional, admin-configurable
  * presets or free text via "Other") -> comment -> submit.
  *
- * @module     local_feedback/app
+ * @module     local_communications/app
  * @copyright  2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -88,8 +88,8 @@ define([
      * @param {Object} params
      */
     var init = function(params) {
-        var wrap = document.getElementById('local-feedback-wrap');
-        var trigger = document.getElementById('local-feedback-trigger');
+        var wrap = document.getElementById('local-communications-wrap');
+        var trigger = document.getElementById('local-communications-trigger');
         if (!trigger || trigger.dataset.feedbackBound === '1') {
             return;
         }
@@ -102,7 +102,7 @@ define([
         var getStrings = function() {
             if (!strings) {
                 strings = Str.get_strings(STRING_KEYS.map(function(key) {
-                    return {key: key, component: 'local_feedback'};
+                    return {key: key, component: 'local_communications'};
                 })).then(function(results) {
                     var map = {};
                     STRING_KEYS.forEach(function(key, index) {
@@ -197,7 +197,7 @@ define([
             context.anonymous = root.find('[data-role="anonymous"]').is(':checked') ? 1 : 0;
 
             $.ajax({
-                url: M.cfg.wwwroot + '/local/feedback/ajax/submit.php',
+                url: M.cfg.wwwroot + '/local/communications/ajax/submit.php',
                 method: 'POST',
                 dataType: 'json',
                 data: $.extend({sesskey: M.cfg.sesskey}, context),
@@ -221,12 +221,12 @@ define([
                 // would resolve the create() promise before the HTML actually lands in
                 // the DOM, so code populating labels/text would run against an empty root.
                 modalPromise = $.when(
-                    Templates.renderForPromise('local_feedback/modal_body', {
+                    Templates.renderForPromise('local_communications/modal_body', {
                         categories: params.categories.map(function(value) {
                             return {value: value};
                         }),
                     }),
-                    Templates.renderForPromise('local_feedback/modal_footer', {}),
+                    Templates.renderForPromise('local_communications/modal_footer', {}),
                     getStrings()
                 ).then(function(bodyData, footerData, s) {
                     return ModalFactory.create({
@@ -309,7 +309,7 @@ define([
                             }
                             modal.hide();
                             $.ajax({
-                                url: M.cfg.wwwroot + '/local/feedback/ajax/neverask.php',
+                                url: M.cfg.wwwroot + '/local/communications/ajax/neverask.php',
                                 method: 'POST',
                                 dataType: 'json',
                                 data: {sesskey: M.cfg.sesskey, campaignid: params.campaignid},

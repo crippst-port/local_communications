@@ -14,9 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_feedback\local;
+namespace local_communications\local;
 
-use local_feedback\table\courses_summary_table;
+use local_communications\table\courses_summary_table;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  * Every method here takes an optional campaignid to scope to one campaign - every
  * report is scoped to exactly one campaign, there's no cross-campaign view any more.
  *
- * @package     local_feedback
+ * @package     local_communications
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -89,7 +89,7 @@ class stats {
                                 ELSE 0
                             END AS score,
                             ROW_NUMBER() OVER (ORDER BY timecreated DESC) AS rn
-                         FROM {local_feedback_submissions}
+                         FROM {local_communications_submissions}
                         WHERE $where) scoredsubmissions) trendsummary";
 
         $row = $DB->get_record_sql($sql, $params);
@@ -126,7 +126,7 @@ class stats {
                         WHEN sentiment = 'sad' THEN $sad
                         ELSE 0
                     END) * 1.0) / COUNT(*) AS avgscore
-                  FROM {local_feedback_submissions}
+                  FROM {local_communications_submissions}
                  WHERE $where
                  GROUP BY courseid";
 
@@ -183,7 +183,7 @@ class stats {
                         WHEN s.sentiment = 'sad' THEN $sad
                         ELSE 0
                     END) * 1.0) / COUNT(*) AS avgscore
-                 FROM {local_feedback_submissions} s
+                 FROM {local_communications_submissions} s
                  JOIN {course} c ON c.id = s.courseid
                  JOIN {course_categories} cc ON cc.id = c.category
                 WHERE $where
@@ -240,7 +240,7 @@ class stats {
                         WHEN sentiment = 'sad' THEN $sad
                         ELSE 0
                     END) * 1.0) / COUNT(*) AS avgscore
-                 FROM {local_feedback_submissions}
+                 FROM {local_communications_submissions}
                 WHERE $where
                 GROUP BY category
                 ORDER BY avgscore ASC";

@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_feedback/floating_button
+    @template local_communications/floating_button
 
     Floating trigger button that opens the course feedback modal.
 
@@ -23,16 +23,16 @@
     * triggerlabel - visible text label
     * triggeraria - accessible label
 }}
-<div class="local-feedback__fab-wrap" id="local-feedback-wrap">
+<div class="local-communications__fab-wrap" id="local-communications-wrap">
     <button
         type="button"
-        id="local-feedback-trigger"
-        class="local-feedback__fab"
+        id="local-communications-trigger"
+        class="local-communications__fab"
         aria-haspopup="dialog"
         aria-expanded="false"
         aria-label="{{triggeraria}}"
     >
-        <span class="local-feedback__fab-icon" aria-hidden="true"><i class="icon fa fa-comment-dots fa-fw"></i></span>
-        <span class="local-feedback__fab-label">{{triggerlabel}}</span>
+        <span class="local-communications__fab-icon" aria-hidden="true"><i class="icon fa fa-comment-dots fa-fw"></i></span>
+        <span class="local-communications__fab-label">{{triggerlabel}}</span>
     </button>
 </div>

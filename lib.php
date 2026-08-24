@@ -17,7 +17,7 @@
 /**
  * Library functions and callbacks.
  *
- * @package     local_feedback
+ * @package     local_communications
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Adds a link to this course's feedback report(s) to the course's navigation (its
  * Reports menu/dropdown) - but only when at least one course-focused campaign
- * ({@see \local_feedback\local\campaigns::get_course_focused_for_course()}) is
+ * ({@see \local_communications\local\campaigns::get_course_focused_for_course()}) is
  * currently relevant to this course; a purely sitewide campaign (dashboard, site
  * home, etc.) never appears here, only via its own campaign dashboard.
  *
@@ -37,35 +37,35 @@ defined('MOODLE_INTERNAL') || die();
  * campaign, there is no pooled "every campaign" view any more.
  *
  * Checked at the COURSE context (not system) so that a role granting
- * local/feedback:viewreports only within this course still sees the link;
+ * local/communications:viewreports only within this course still sees the link;
  * course_report.php/course_campaigns.php re-check the same course-level capability.
  *
  * @param navigation_node $navigation
  * @param stdClass $course
  * @param context_course $context
  */
-function local_feedback_extend_navigation_course($navigation, $course, $context) {
-    if (!has_capability('local/feedback:viewreports', $context)) {
+function local_communications_extend_navigation_course($navigation, $course, $context) {
+    if (!has_capability('local/communications:viewreports', $context)) {
         return;
     }
 
     require_once(__DIR__ . '/classes/local/campaigns.php');
-    $matches = \local_feedback\local\campaigns::get_course_focused_for_course($course);
+    $matches = \local_communications\local\campaigns::get_course_focused_for_course($course);
     if (!$matches) {
         return;
     }
 
     if (count($matches) === 1) {
-        $url = new moodle_url('/local/feedback/course_report.php', [
+        $url = new moodle_url('/local/communications/course_report.php', [
             'courseid' => $course->id,
             'campaignid' => $matches[0]->id,
         ]);
     } else {
-        $url = new moodle_url('/local/feedback/course_campaigns.php', ['courseid' => $course->id]);
+        $url = new moodle_url('/local/communications/course_campaigns.php', ['courseid' => $course->id]);
     }
 
     $navigation->add(
-        get_string('reportheading', 'local_feedback'),
+        get_string('reportheading', 'local_communications'),
         $url,
         navigation_node::TYPE_SETTING,
         null,
@@ -87,20 +87,20 @@ function local_feedback_extend_navigation_course($navigation, $course, $context)
  * @param stdClass $course
  * @param context $coursecontext
  */
-function local_feedback_extend_navigation_user_settings($navigation, $user, $usercontext, $course, $coursecontext) {
+function local_communications_extend_navigation_user_settings($navigation, $user, $usercontext, $course, $coursecontext) {
     global $USER;
 
     if ($USER->id != $user->id || isguestuser($user)) {
         return;
     }
 
-    $url = new moodle_url('/local/feedback/preferences.php');
+    $url = new moodle_url('/local/communications/preferences.php');
     $navigation->add(
-        get_string('preferences_link', 'local_feedback'),
+        get_string('preferences_link', 'local_communications'),
         $url,
         navigation_node::TYPE_SETTING,
         null,
-        'local_feedback_preferences',
+        'local_communications_preferences',
         new pix_icon('i/settings', '')
     );
 }
@@ -116,16 +116,16 @@ function local_feedback_extend_navigation_user_settings($navigation, $user, $use
  * @param bool $iscurrentuser
  * @param stdClass|null $course
  */
-function local_feedback_myprofile_navigation(core_user\output\myprofile\tree $tree, $user, $iscurrentuser, $course) {
+function local_communications_myprofile_navigation(core_user\output\myprofile\tree $tree, $user, $iscurrentuser, $course) {
     if (!$iscurrentuser || isguestuser($user)) {
         return;
     }
 
-    $url = new moodle_url('/local/feedback/my_submissions.php');
+    $url = new moodle_url('/local/communications/my_submissions.php');
     $node = new core_user\output\myprofile\node(
         'miscellaneous',
-        'local_feedback_mysubmissions',
-        get_string('mysubmissions_link', 'local_feedback'),
+        'local_communications_mysubmissions',
+        get_string('mysubmissions_link', 'local_communications'),
         null,
         $url
     );

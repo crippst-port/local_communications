@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_feedback\local;
+namespace local_communications\local;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
  * reused by hook_callbacks (to decide whether/what to render) and ajax/submit.php
  * (to re-validate before storing), so the two can never disagree about what was live.
  *
- * @package     local_feedback
+ * @package     local_communications
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -43,7 +43,7 @@ class campaigns {
     public static function get_all(): array {
         global $DB;
 
-        return array_values($DB->get_records('local_feedback_campaigns', null, 'timecreated DESC'));
+        return array_values($DB->get_records('local_communications_campaigns', null, 'timecreated DESC'));
     }
 
     /**
@@ -53,11 +53,11 @@ class campaigns {
     public static function get(int $id) {
         global $DB;
 
-        return $DB->get_record('local_feedback_campaigns', ['id' => $id]);
+        return $DB->get_record('local_communications_campaigns', ['id' => $id]);
     }
 
     /**
-     * @param \stdClass $data Every local_feedback_campaigns column except id/timecreated/timemodified.
+     * @param \stdClass $data Every local_communications_campaigns column except id/timecreated/timemodified.
      * @return int The new campaign's id.
      */
     public static function create(\stdClass $data): int {
@@ -67,7 +67,7 @@ class campaigns {
         $data->timemodified = $data->timecreated;
         $data->usermodified = $USER->id;
 
-        $id = $DB->insert_record('local_feedback_campaigns', $data);
+        $id = $DB->insert_record('local_communications_campaigns', $data);
         self::$enabledcache = null;
 
         return $id;
@@ -84,7 +84,7 @@ class campaigns {
         $data->timemodified = time();
         $data->usermodified = $USER->id;
 
-        $DB->update_record('local_feedback_campaigns', $data);
+        $DB->update_record('local_communications_campaigns', $data);
         self::$enabledcache = null;
     }
 
@@ -100,8 +100,8 @@ class campaigns {
     public static function delete(int $id): void {
         global $DB;
 
-        $DB->delete_records('local_feedback_campaigns', ['id' => $id]);
-        $DB->delete_records('local_feedback_campaign_responses', ['campaignid' => $id]);
+        $DB->delete_records('local_communications_campaigns', ['id' => $id]);
+        $DB->delete_records('local_communications_campaign_responses', ['campaignid' => $id]);
         self::$enabledcache = null;
     }
 
@@ -113,8 +113,8 @@ class campaigns {
     public static function toggle(int $id): void {
         global $DB, $USER;
 
-        $campaign = $DB->get_record('local_feedback_campaigns', ['id' => $id], '*', MUST_EXIST);
-        $DB->update_record('local_feedback_campaigns', (object) [
+        $campaign = $DB->get_record('local_communications_campaigns', ['id' => $id], '*', MUST_EXIST);
+        $DB->update_record('local_communications_campaigns', (object) [
             'id' => $id,
             'enabled' => $campaign->enabled ? 0 : 1,
             'timemodified' => time(),
@@ -196,7 +196,7 @@ class campaigns {
      * unattributed response rather than being rejected (see ajax/submit.php), the same
      * grace already given to a campaign that expires or gets disabled mid-fill.
      *
-     * Counts real rows in local_feedback_submissions - the same number a campaign's own
+     * Counts real rows in local_communications_submissions - the same number a campaign's own
      * report shows as "Total responses" - not the response-limit ledger, which exists
      * for a different purpose and can diverge from it (e.g. it isn't touched by
      * unattributed submissions at all).
@@ -211,7 +211,7 @@ class campaigns {
             return false;
         }
 
-        return $DB->count_records('local_feedback_submissions', ['campaignid' => $campaign->id]) >= $campaign->maxresponses;
+        return $DB->count_records('local_communications_submissions', ['campaignid' => $campaign->id]) >= $campaign->maxresponses;
     }
 
     /**
@@ -225,7 +225,7 @@ class campaigns {
      * every one of them; for a non-course-focused campaign, $courseid is ignored and the
      * limit is a single site-wide count, since "per course" wouldn't mean anything there.
      *
-     * Checked against local_feedback_campaign_responses, not local_feedback_submissions
+     * Checked against local_communications_campaign_responses, not local_communications_submissions
      * directly - the latter's userid is deliberately 0 for anonymous submissions, which
      * would make the limit trivially bypassable by ticking "submit anonymously". This
      * ledger always records the real user id regardless, see {@see record_response()}.
@@ -255,7 +255,7 @@ class campaigns {
             $params['since'] = usergetmidnight(time());
         }
 
-        return $DB->record_exists_select('local_feedback_campaign_responses', $where, $params);
+        return $DB->record_exists_select('local_communications_campaign_responses', $where, $params);
     }
 
     /**
@@ -276,7 +276,7 @@ class campaigns {
             return;
         }
 
-        $DB->insert_record('local_feedback_campaign_responses', (object) [
+        $DB->insert_record('local_communications_campaign_responses', (object) [
             'campaignid' => $campaignid,
             'userid' => $userid,
             'courseid' => $courseid,
@@ -329,7 +329,7 @@ class campaigns {
         global $DB;
 
         if (self::$enabledcache === null) {
-            self::$enabledcache = array_values($DB->get_records('local_feedback_campaigns', ['enabled' => 1]));
+            self::$enabledcache = array_values($DB->get_records('local_communications_campaigns', ['enabled' => 1]));
         }
 
         return self::$enabledcache;
@@ -444,9 +444,9 @@ class campaigns {
      */
     public static function get_sentiment_labels(\stdClass $campaign): array {
         return [
-            'happy' => $campaign->labelhappy ?: get_string('sentiment_happy', 'local_feedback'),
-            'neutral' => $campaign->labelneutral ?: get_string('sentiment_neutral', 'local_feedback'),
-            'sad' => $campaign->labelsad ?: get_string('sentiment_sad', 'local_feedback'),
+            'happy' => $campaign->labelhappy ?: get_string('sentiment_happy', 'local_communications'),
+            'neutral' => $campaign->labelneutral ?: get_string('sentiment_neutral', 'local_communications'),
+            'sad' => $campaign->labelsad ?: get_string('sentiment_sad', 'local_communications'),
         ];
     }
 
@@ -465,30 +465,30 @@ class campaigns {
         if ($categoryids) {
             $names = $DB->get_records_list('course_categories', 'id', $categoryids, '', 'id, name');
             $labels = array_map(fn($id) => $names[$id]->name ?? "#$id", $categoryids);
-            $parts[] = get_string('targetsummary_categories', 'local_feedback', implode(', ', $labels));
+            $parts[] = get_string('targetsummary_categories', 'local_communications', implode(', ', $labels));
         }
 
         $patterns = self::parse_lines($campaign->pagetypepatterns ?? '');
         if ($patterns) {
-            $parts[] = get_string('targetsummary_pages', 'local_feedback', implode(', ', $patterns));
+            $parts[] = get_string('targetsummary_pages', 'local_communications', implode(', ', $patterns));
         }
 
         $roles = self::parse_csv($campaign->targetroles ?? '');
         if ($roles) {
-            $parts[] = get_string('targetsummary_roles', 'local_feedback', implode(', ', $roles));
+            $parts[] = get_string('targetsummary_roles', 'local_communications', implode(', ', $roles));
         }
 
         if (!empty($campaign->targetcohortid)) {
             $cohortname = $DB->get_field('cohort', 'name', ['id' => $campaign->targetcohortid]);
-            $parts[] = get_string('targetsummary_cohort', 'local_feedback', $cohortname ?: '#' . $campaign->targetcohortid);
+            $parts[] = get_string('targetsummary_cohort', 'local_communications', $cohortname ?: '#' . $campaign->targetcohortid);
         }
 
         $userids = self::parse_int_list($campaign->targetuserids ?? '');
         if ($userids) {
-            $parts[] = get_string('targetsummary_users', 'local_feedback', count($userids));
+            $parts[] = get_string('targetsummary_users', 'local_communications', count($userids));
         }
 
-        return $parts ? implode('; ', $parts) : get_string('targetsummary_everyone', 'local_feedback');
+        return $parts ? implode('; ', $parts) : get_string('targetsummary_everyone', 'local_communications');
     }
 
     /**

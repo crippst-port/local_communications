@@ -17,7 +17,7 @@
 /**
  * Capability definitions.
  *
- * @package     local_feedback
+ * @package     local_communications
  * @copyright   2026 Tom Cripps <tom.cripps@port.ac.uk>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
     // Allows a user to submit feedback about a course from the floating widget.
-    'local/feedback:submit' => [
+    'local/communications:submit' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => [
@@ -39,7 +39,7 @@ $capabilities = [
     ],
 
     // Allows a user to view the collected feedback report.
-    'local/feedback:viewreports' => [
+    'local/communications:viewreports' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [
@@ -48,7 +48,7 @@ $capabilities = [
     ],
 
     // Allows a user to create/edit/delete feedback campaigns.
-    'local/feedback:managecampaigns' => [
+    'local/communications:managecampaigns' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [
