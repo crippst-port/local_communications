@@ -22,7 +22,7 @@
     module only adds the timer-driven rotation and dot-click handling on top of this.
 
     Context variables:
-    * stories - array of {index, active, imageurl, title, description, linkurl, dotaria}
+    * stories - array of {index, active, imageurl, title, description, linkurl, dotaria, slidearia}
     * hasmultiple - whether there's more than one story (nav/dots are pointless with just one)
     * carousellabel - accessible label for the carousel region
     * prevlabel / nextlabel - accessible labels for the prev/next buttons
@@ -39,12 +39,24 @@
 >
     <div class="local-communications__news-track" aria-live="off">
         {{#stories}}
-        <div class="local-communications__news-slide{{#active}} local-communications__news-slide--active{{/active}}" data-index="{{index}}">
+        <div
+            class="local-communications__news-slide{{#active}} local-communications__news-slide--active{{/active}}"
+            data-index="{{index}}"
+            role="group"
+            aria-roledescription="slide"
+            aria-label="{{slidearia}}"
+        >
             {{#linkurl}}<a class="local-communications__news-slidelink" href="{{linkurl}}">{{/linkurl}}
                 {{#imageurl}}<img class="local-communications__news-image" src="{{imageurl}}" alt="" loading="lazy">{{/imageurl}}
                 <div class="local-communications__news-text">
                     <p class="local-communications__news-headline">{{{title}}}</p>
                     {{#description}}<p class="local-communications__news-description">{{{description}}}</p>{{/description}}
+                    {{#linkurl}}
+                    <span class="local-communications__news-cta">
+                        {{#str}} news_readmore, local_communications {{/str}}
+                        <i class="icon fa fa-arrow-right fa-fw" aria-hidden="true"></i>
+                    </span>
+                    {{/linkurl}}
                 </div>
             {{#linkurl}}</a>{{/linkurl}}
         </div>

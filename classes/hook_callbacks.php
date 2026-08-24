@@ -267,6 +267,9 @@ class hook_callbacks {
                 'dotaria' => get_string('news_dotaria', 'local_communications', (object) [
                     'index' => $index + 1, 'count' => $count,
                 ]),
+                'slidearia' => get_string('news_slidearia', 'local_communications', (object) [
+                    'index' => $index + 1, 'count' => $count,
+                ]),
             ];
         }
 

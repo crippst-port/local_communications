@@ -67,7 +67,7 @@
  * a distinct block among the dashboard's other content, rather than a full-bleed banner.
  */
 .local-communications__news-carousel {
-    margin: 0 0 1.5rem;
+    margin: 0 0 1.25rem;
     overflow: hidden;
     /* Matches this theme's $card-border-radius (4px), so the carousel reads as one of
        the dashboard's own cards rather than a differently-rounded block dropped in. */
@@ -79,7 +79,7 @@
 
 .local-communications__news-track {
     position: relative;
-    height: 14rem;
+    height: 10.5rem;
     overflow: hidden;
 }
 
@@ -117,18 +117,56 @@
     text-decoration: none;
 }
 
-.local-communications__news-slidelink:hover,
-.local-communications__news-slidelink:focus {
+.local-communications__news-slidelink:hover {
     color: inherit;
     text-decoration: none;
+}
+
+.local-communications__news-slidelink:hover .local-communications__news-cta {
+    text-decoration: underline;
+}
+
+.local-communications__news-slidelink:hover .local-communications__news-cta .icon {
+    transform: translateX(.2rem);
+}
+
+/* :focus-visible, not :focus - see the controls' own focus rules above for why. */
+.local-communications__news-slidelink:focus-visible {
+    color: inherit;
+    text-decoration: none;
+    outline: 2px solid #fff;
     outline-offset: -2px;
 }
 
 .local-communications__news-image {
     flex: 0 0 auto;
-    width: 14rem;
+    width: 10.5rem;
     height: 100%;
     object-fit: cover;
+}
+
+/*
+ * Always visible, not just on hover - a hover-only cue is invisible to keyboard/touch
+ * users until they've already landed on the link, so it can't be what tells them a
+ * slide is clickable in the first place. Its absence on a slide with no link is itself
+ * the signal that one isn't.
+ */
+.local-communications__news-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    margin-top: .1rem;
+    font-size: .85rem;
+    font-weight: 600;
+}
+
+.local-communications__news-cta .icon {
+    margin: 0;
+    width: .7rem;
+    max-width: .7rem;
+    height: .7rem;
+    max-height: .7rem;
+    transition: transform .15s ease;
 }
 
 .local-communications__news-text {
@@ -136,19 +174,20 @@
     flex-direction: column;
     justify-content: center;
     gap: .5rem;
-    padding: 1.25rem 1.75rem;
+    padding: 1.1rem 1.5rem;
     min-width: 0;
 }
 
 .local-communications__news-headline {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: 1.05rem;
     font-weight: 700;
 }
 
 .local-communications__news-description {
     margin: 0;
     max-width: 48rem;
+    font-size: .9rem;
     color: rgba(255, 255, 255, .8);
     overflow: hidden;
     display: -webkit-box;
@@ -167,8 +206,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: .75rem;
-    padding: .4rem .6rem;
+    gap: .6rem;
+    padding: .3rem .6rem;
     background: #1c2743;
 }
 
@@ -196,43 +235,76 @@
 }
 
 .local-communications__news-navbtn:hover,
-.local-communications__news-navbtn:focus,
-.local-communications__news-playpause:hover,
-.local-communications__news-playpause:focus {
+.local-communications__news-playpause:hover {
     background: rgba(255, 255, 255, .15);
     color: #fff;
-    outline: none;
+}
+
+/*
+ * :focus-visible (not a blanket :focus) so a mouse click doesn't show the same ring a
+ * keyboard user needs - and a real outline, not just the hover tint, satisfies WCAG
+ * 2.4.7 Focus Visible in a way a colour change alone is too subtle to guarantee,
+ * especially on the small dots below.
+ */
+.local-communications__news-navbtn:focus-visible,
+.local-communications__news-playpause:focus-visible {
+    background: rgba(255, 255, 255, .15);
+    color: #fff;
+    outline: 2px solid #fff;
+    outline-offset: 2px;
 }
 
 .local-communications__news-dots {
     display: flex;
     align-items: center;
-    gap: .5rem;
 }
 
+/*
+ * WCAG 2.2's 2.5.8 Target Size (Minimum) requires a 24x24px hit target - the dot
+ * itself stays visually small (drawn via ::after below) so the bar doesn't get
+ * chunky, but the clickable/tappable button is the full 24px, with no gap between
+ * them needed since adjacent 24px circles already sit exactly the minimum spacing
+ * apart edge-to-edge.
+ */
 .local-communications__news-dot {
-    width: .55rem;
-    height: .55rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
     padding: 0;
     border: none;
     border-radius: 50%;
-    background: rgba(255, 255, 255, .35);
+    background: transparent;
     cursor: pointer;
 }
 
-.local-communications__news-dot:hover,
-.local-communications__news-dot:focus {
-    background: rgba(255, 255, 255, .6);
-    outline: none;
+.local-communications__news-dot::after {
+    content: '';
+    width: .55rem;
+    height: .55rem;
+    border-radius: 50%;
+    /* .5 alpha, not the .35 it used to be - comfortably clears the 3:1 minimum non-text
+       contrast ratio (1.4.11) against this bar's background; .35 sat right on the line. */
+    background: rgba(255, 255, 255, .5);
 }
 
-.local-communications__news-dot--active {
+.local-communications__news-dot:hover::after {
+    background: rgba(255, 255, 255, .75);
+}
+
+.local-communications__news-dot:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+.local-communications__news-dot--active::after {
     background: #fff;
 }
 
 @media (max-width: 576px) {
     .local-communications__news-track {
-        height: 20rem;
+        height: 15rem;
     }
 
     .local-communications__news-slide,
@@ -242,7 +314,7 @@
 
     .local-communications__news-image {
         width: 100%;
-        height: 9rem;
+        height: 7rem;
     }
 }
 
