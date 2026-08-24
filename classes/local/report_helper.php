@@ -18,8 +18,6 @@ namespace local_communications\local;
 
 use local_communications\table\courses_summary_table;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Shared rendering helpers for campaign reports (report.php/course_report.php).
  *
@@ -39,7 +37,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class report_helper {
-
     /** How many best-scoring categories the compact view shows. */
     protected const BEST_COUNT = 3;
 
@@ -63,7 +60,10 @@ class report_helper {
     public static function render_widget_preview(\stdClass $campaign): string {
         $title = $campaign->modaltitle ?: get_string('modaltitle', 'local_communications');
 
-        $out = \html_writer::div(get_string('report_widgetpreview', 'local_communications'), 'local-communications__widgetpreview-label');
+        $out = \html_writer::div(
+            get_string('report_widgetpreview', 'local_communications'),
+            'local-communications__widgetpreview-label'
+        );
         $out .= \html_writer::div(format_string($title), 'local-communications__widgetpreview-title');
         if (!empty($campaign->introtext)) {
             $out .= \html_writer::tag('p', s($campaign->introtext), ['class' => 'local-communications__widgetpreview-intro']);

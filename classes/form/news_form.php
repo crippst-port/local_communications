@@ -34,7 +34,6 @@ require_once($CFG->libdir . '/formslib.php');
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class news_form extends \moodleform {
-
     /**
      * File manager options for the story image - a single image file.
      *
@@ -71,7 +70,11 @@ class news_form extends \moodleform {
         $mform->addHelpButton('description', 'news_description', 'local_communications');
 
         $mform->addElement(
-            'filemanager', 'image', get_string('news_image', 'local_communications'), null, self::image_options()
+            'filemanager',
+            'image',
+            get_string('news_image', 'local_communications'),
+            null,
+            self::image_options()
         );
         $mform->addHelpButton('image', 'news_image', 'local_communications');
 

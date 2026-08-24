@@ -39,7 +39,6 @@ require_once($CFG->libdir . '/tablelib.php');
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class courses_summary_table extends \table_sql {
-
     /**
      * Score points awarded per sentiment when averaging, out of a 5-point scale.
      * Public so report.php can compute the same overall average for its stat card,
@@ -71,6 +70,8 @@ class courses_summary_table extends \table_sql {
      * How many of a course's most recent responses form this instance's trend window.
      * Resolved once in the constructor from the local_communications/trendwindow admin
      * setting, so col_trend() and the SQL built here always agree.
+     *
+     * @var int
      */
     protected int $trendwindow;
 
@@ -78,6 +79,8 @@ class courses_summary_table extends \table_sql {
      * The campaign this table instance is scoped to - every report is scoped to exactly
      * one campaign, so this is never 0 in practice, but col_actions() still needs it to
      * build a working link into course_report.php (which requires a campaignid).
+     *
+     * @var int
      */
     protected int $campaignid;
 
@@ -396,8 +399,13 @@ class courses_summary_table extends \table_sql {
      */
     public function col_actions($row): string {
         $url = new \moodle_url(
-            '/local/communications/course_report.php', ['courseid' => $row->courseid, 'campaignid' => $this->campaignid]
+            '/local/communications/course_report.php',
+            ['courseid' => $row->courseid, 'campaignid' => $this->campaignid]
         );
-        return \html_writer::link($url, get_string('report_viewfeedback', 'local_communications'), ['class' => 'btn btn-secondary btn-sm']);
+        return \html_writer::link(
+            $url,
+            get_string('report_viewfeedback', 'local_communications'),
+            ['class' => 'btn btn-secondary btn-sm']
+        );
     }
 }

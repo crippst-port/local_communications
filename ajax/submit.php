@@ -111,8 +111,10 @@ try {
         $recordcampaignname = $activecampaign->name;
     } else {
         $submittedcampaign = $campaignid ? \local_communications\local\campaigns::get($campaignid) : null;
-        if ($submittedcampaign
-            && \local_communications\local\campaigns::has_reached_response_limit($submittedcampaign, $USER->id, $course->id)) {
+        if (
+            $submittedcampaign
+            && \local_communications\local\campaigns::has_reached_response_limit($submittedcampaign, $USER->id, $course->id)
+        ) {
             throw new moodle_exception('error_responselimit', 'local_communications');
         }
         $recordcampaignid = 0;

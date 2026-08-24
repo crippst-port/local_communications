@@ -16,8 +16,6 @@
 
 namespace local_communications\local;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Tracks which feedback campaigns a user has asked not to be shown again - the
  * "click here if you'd prefer not to be asked" link in the widget itself.
@@ -32,7 +30,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class dismissed_campaigns {
-
     /** @var string The per-campaign user preference name. */
     protected const PREF = 'local_communications_neverask';
 

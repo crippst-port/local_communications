@@ -92,7 +92,14 @@ if ($topic !== '') {
 $url = new moodle_url('/local/communications/course_report.php', $urlparams);
 
 $table = new submissions_table(
-    'local-communications-course-submissions', $url, $courseid, $sentiment, true, $topic, $campaignid, $labels
+    'local-communications-course-submissions',
+    $url,
+    $courseid,
+    $sentiment,
+    true,
+    $topic,
+    $campaignid,
+    $labels
 );
 $table->is_downloading($download, 'course_feedback_' . $course->shortname, format_string($course->fullname));
 $table->show_download_buttons_at([TABLE_P_TOP]);
@@ -130,7 +137,11 @@ if (!$table->is_downloading()) {
             ['data-label' => get_string('report_col_trend', 'local_communications')]
         );
     }
-    echo html_writer::div($total, 'local-communications__stat-value', ['data-label' => get_string('report_stat_total', 'local_communications')]);
+    echo html_writer::div(
+        $total,
+        'local-communications__stat-value',
+        ['data-label' => get_string('report_stat_total', 'local_communications')]
+    );
     foreach (['happy', 'neutral', 'sad'] as $key) {
         echo html_writer::div(
             $stats[$key],
@@ -181,7 +192,10 @@ if (!$table->is_downloading()) {
         'class' => 'btn btn-primary',
     ]);
     echo html_writer::link(
-        new moodle_url('/local/communications/course_report.php', ['courseid' => $courseid, 'campaignid' => $campaignid, 'reset' => 1]),
+        new moodle_url(
+            '/local/communications/course_report.php',
+            ['courseid' => $courseid, 'campaignid' => $campaignid, 'reset' => 1]
+        ),
         get_string('report_reset', 'local_communications'),
         ['class' => 'btn btn-secondary']
     );

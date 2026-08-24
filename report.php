@@ -69,7 +69,7 @@ $download = optional_param('download', '', PARAM_ALPHA);
 $reset = optional_param('reset', 0, PARAM_BOOL);
 
 if ($campaign->coursefocused) {
-    // ---- Course-focused: course/category comparison, scoped to this campaign only. ----
+    // Course-focused: course/category comparison, scoped to this campaign only.
     $tier = optional_param('tier', '', PARAM_ALPHA);
     $trend = optional_param('trend', '', PARAM_ALPHA);
     $category = optional_param('category', 0, PARAM_INT);
@@ -95,7 +95,14 @@ if ($campaign->coursefocused) {
     $url = new moodle_url('/local/communications/report.php', $urlparams);
 
     $table = new courses_summary_table(
-        'local-communications-courses-summary', $url, $download !== '', $tier, $trend, $category, $campaignid, $labels
+        'local-communications-courses-summary',
+        $url,
+        $download !== '',
+        $tier,
+        $trend,
+        $category,
+        $campaignid,
+        $labels
     );
     $table->is_downloading($download, 'campaign_feedback_summary', $heading);
     $table->show_download_buttons_at([TABLE_P_TOP]);
@@ -107,7 +114,10 @@ if ($campaign->coursefocused) {
     }
 
     $counts = $DB->get_records_sql(
-        'SELECT sentiment, COUNT(*) AS total FROM {local_communications_submissions} WHERE campaignid = :campaignid GROUP BY sentiment',
+        'SELECT sentiment, COUNT(*) AS total
+           FROM {local_communications_submissions}
+          WHERE campaignid = :campaignid
+       GROUP BY sentiment',
         ['campaignid' => $campaignid]
     );
     $stats = ['happy' => 0, 'neutral' => 0, 'sad' => 0];
@@ -122,13 +132,16 @@ if ($campaign->coursefocused) {
     if (!$table->is_downloading()) {
         if ($total > 0) {
             echo html_writer::div(
-                get_string('report_score_explain', 'local_communications', (object) $labels), 'local-communications__score-explain'
+                get_string('report_score_explain', 'local_communications', (object) $labels),
+                'local-communications__score-explain'
             );
         }
 
         echo html_writer::start_div('local-communications__stats');
         echo html_writer::div(
-            $total, 'local-communications__stat-value', ['data-label' => get_string('report_stat_total', 'local_communications')]
+            $total,
+            'local-communications__stat-value',
+            ['data-label' => get_string('report_stat_total', 'local_communications')]
         );
         if ($total > 0) {
             $points = courses_summary_table::SCORE_POINTS;
@@ -164,7 +177,8 @@ if ($campaign->coursefocused) {
             if ($categoryperformancehtml !== '') {
                 echo html_writer::div(
                     html_writer::div(
-                        get_string('report_heading_categoryperformance', 'local_communications'), 'local-communications__stat-card-title'
+                        get_string('report_heading_categoryperformance', 'local_communications'),
+                        'local-communications__stat-card-title'
                     ) . $categoryperformancehtml,
                     'local-communications__stat-card local-communications__stat-card--breakdown'
                 );
@@ -210,7 +224,13 @@ if ($campaign->coursefocused) {
             foreach ($categorybreakdown as $row) {
                 $categoryoptions[$row->categoryid] = $row->label;
             }
-            echo html_writer::select($categoryoptions, 'category', $category, null, ['id' => 'local-communications-filter-category']);
+            echo html_writer::select(
+                $categoryoptions,
+                'category',
+                $category,
+                null,
+                ['id' => 'local-communications-filter-category']
+            );
 
             echo html_writer::empty_tag('input', [
                 'type' => 'submit',
@@ -234,7 +254,7 @@ if ($campaign->coursefocused) {
         echo $OUTPUT->footer();
     }
 } else {
-    // ---- Not course-focused: flat combined list, no course/category comparison. ----
+    // Not course-focused: flat combined list, no course/category comparison.
     $sentiment = optional_param('sentiment', '', PARAM_ALPHA);
     $topic = optional_param('topic', '', PARAM_RAW_TRIMMED);
 
@@ -253,7 +273,14 @@ if ($campaign->coursefocused) {
     $url = new moodle_url('/local/communications/report.php', $urlparams);
 
     $table = new submissions_table(
-        'local-communications-campaign-submissions', $url, 0, $sentiment, false, $topic, $campaignid, $labels
+        'local-communications-campaign-submissions',
+        $url,
+        0,
+        $sentiment,
+        false,
+        $topic,
+        $campaignid,
+        $labels
     );
     $table->is_downloading($download, 'campaign_feedback', $heading);
     $table->show_download_buttons_at([TABLE_P_TOP]);
@@ -265,7 +292,10 @@ if ($campaign->coursefocused) {
     }
 
     $counts = $DB->get_records_sql(
-        'SELECT sentiment, COUNT(*) AS total FROM {local_communications_submissions} WHERE campaignid = :campaignid GROUP BY sentiment',
+        'SELECT sentiment, COUNT(*) AS total
+           FROM {local_communications_submissions}
+          WHERE campaignid = :campaignid
+       GROUP BY sentiment',
         ['campaignid' => $campaignid]
     );
     $stats = ['happy' => 0, 'neutral' => 0, 'sad' => 0];
@@ -293,7 +323,9 @@ if ($campaign->coursefocused) {
             );
         }
         echo html_writer::div(
-            $total, 'local-communications__stat-value', ['data-label' => get_string('report_stat_total', 'local_communications')]
+            $total,
+            'local-communications__stat-value',
+            ['data-label' => get_string('report_stat_total', 'local_communications')]
         );
         foreach (['happy', 'neutral', 'sad'] as $key) {
             echo html_writer::div(
@@ -320,7 +352,13 @@ if ($campaign->coursefocused) {
             'neutral' => $labels['neutral'],
             'sad' => $labels['sad'],
         ];
-        echo html_writer::select($sentimentoptions, 'sentiment', $sentiment, null, ['id' => 'local-communications-filter-sentiment']);
+        echo html_writer::select(
+            $sentimentoptions,
+            'sentiment',
+            $sentiment,
+            null,
+            ['id' => 'local-communications-filter-sentiment']
+        );
 
         echo html_writer::start_tag('label', ['for' => 'local-communications-filter-topic']);
         echo get_string('report_filtertopic', 'local_communications');
@@ -331,7 +369,8 @@ if ($campaign->coursefocused) {
             if ($row->category !== null && $row->category !== '') {
                 $topicoptions[$row->category] = s($row->category);
             } else {
-                $topicoptions[submissions_table::TOPIC_UNSPECIFIED] = get_string('report_topic_unspecified', 'local_communications');
+                $topicoptions[submissions_table::TOPIC_UNSPECIFIED] =
+                    get_string('report_topic_unspecified', 'local_communications');
             }
         }
         echo html_writer::select($topicoptions, 'topic', $topic, null, ['id' => 'local-communications-filter-topic']);

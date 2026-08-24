@@ -59,7 +59,10 @@ if (optional_param('reenableall', 0, PARAM_BOOL)) {
 if (optional_param('disableall', 0, PARAM_BOOL)) {
     require_sesskey();
     dismissed_campaigns::set_global_optout($USER->id, true);
-    redirect(new moodle_url('/local/communications/preferences.php'), get_string('preferences_disabledall', 'local_communications'));
+    redirect(
+        new moodle_url('/local/communications/preferences.php'),
+        get_string('preferences_disabledall', 'local_communications')
+    );
 }
 if (optional_param('enableall', 0, PARAM_BOOL)) {
     require_sesskey();

@@ -41,10 +41,9 @@ use core_privacy\local\request\writer;
  */
 class provider implements
     \core_privacy\local\metadata\provider,
-    \core_privacy\local\request\plugin\provider,
     \core_privacy\local\request\core_userlist_provider,
+    \core_privacy\local\request\plugin\provider,
     \core_privacy\local\request\user_preference_provider {
-
     /**
      * Describe the personal data stored by this plugin.
      *
@@ -233,7 +232,10 @@ class provider implements
                 }
 
                 writer::with_context($context)->export_data(
-                    [get_string('pluginname', 'local_communications'), get_string('privacy:campaignresponses', 'local_communications')],
+                    [
+                        get_string('pluginname', 'local_communications'),
+                        get_string('privacy:campaignresponses', 'local_communications'),
+                    ],
                     (object) ['responses' => $data]
                 );
             }

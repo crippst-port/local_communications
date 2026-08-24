@@ -47,7 +47,14 @@ $PAGE->requires->css('/local/communications/styles.css');
 $table = new submissions_table(
     'local-communications-my-submissions',
     new moodle_url('/local/communications/my_submissions.php'),
-    0, '', false, '', 0, [], $USER->id, true
+    0,
+    '',
+    false,
+    '',
+    0,
+    [],
+    $USER->id,
+    true
 );
 $table->is_downloading($download, 'my_feedback');
 $table->show_download_buttons_at([TABLE_P_TOP]);

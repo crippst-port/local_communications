@@ -38,7 +38,6 @@ require_once($CFG->dirroot . '/course/lib.php'); // For get_module_types_names()
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class campaign_form extends \moodleform {
-
     /**
      * Friendly checkbox key => the $PAGE->pagetype pattern it targets, confirmed against
      * core (my/index.php, index.php, course/view.php, course/index.php, user/index.php,
@@ -101,7 +100,10 @@ class campaign_form extends \moodleform {
             'once' => get_string('campaign_responselimit_once', 'local_communications'),
         ];
         $mform->addElement(
-            'select', 'responselimit', get_string('campaign_responselimit', 'local_communications'), $responselimitoptions
+            'select',
+            'responselimit',
+            get_string('campaign_responselimit', 'local_communications'),
+            $responselimitoptions
         );
         $mform->setDefault('responselimit', 'none');
         $mform->addHelpButton('responselimit', 'campaign_responselimit', 'local_communications');
@@ -160,7 +162,11 @@ class campaign_form extends \moodleform {
             $mform->setType($labelfield, PARAM_TEXT);
         }
         $mform->addGroup(
-            $labelsgroup, 'labelsgroup', get_string('campaign_sentimentlabels', 'local_communications'), ['&nbsp;&nbsp;'], false
+            $labelsgroup,
+            'labelsgroup',
+            get_string('campaign_sentimentlabels', 'local_communications'),
+            ['&nbsp;&nbsp;'],
+            false
         );
         $mform->addHelpButton('labelsgroup', 'campaign_sentimentlabels', 'local_communications');
 
@@ -194,11 +200,18 @@ class campaign_form extends \moodleform {
         $areagroup = [];
         foreach (array_keys(self::KEY_AREAS) as $key) {
             $areagroup[] = $mform->createElement(
-                'advcheckbox', 'page_' . $key, '', get_string('campaign_page_' . $key, 'local_communications')
+                'advcheckbox',
+                'page_' . $key,
+                '',
+                get_string('campaign_page_' . $key, 'local_communications')
             );
         }
         $mform->addGroup(
-            $areagroup, 'pagesgroup', get_string('campaign_keyareas', 'local_communications'), ['&nbsp;&nbsp;&nbsp;&nbsp;'], false
+            $areagroup,
+            'pagesgroup',
+            get_string('campaign_keyareas', 'local_communications'),
+            ['&nbsp;&nbsp;&nbsp;&nbsp;'],
+            false
         );
         $mform->addHelpButton('pagesgroup', 'campaign_keyareas', 'local_communications');
 
@@ -292,7 +305,8 @@ class campaign_form extends \moodleform {
     public function set_data_from_record(\stdClass $record): void {
         $data = clone $record;
         $data->categoryids = array_filter(array_map('intval', preg_split(
-            '/\r\n|\r|\n/', (string) ($record->categoryids ?? '')
+            '/\r\n|\r|\n/',
+            (string) ($record->categoryids ?? '')
         )));
         $data->targetroles = array_filter(array_map('trim', explode(',', (string) ($record->targetroles ?? ''))));
 

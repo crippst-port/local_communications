@@ -33,7 +33,6 @@ require_once($CFG->libdir . '/tablelib.php');
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class submissions_table extends \table_sql {
-
     /** @var array Emoji + string lookup per sentiment value. */
     protected const SENTIMENT_ICONS = [
         'happy' => '😊',

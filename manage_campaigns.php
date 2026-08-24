@@ -104,9 +104,18 @@ foreach ($campaigns as $campaign) {
         $status = get_string('campaign_status_limitreached', 'local_communications');
     }
 
-    $window = get_string('campaign_window_start', 'local_communications', $campaign->starttime ? userdate($campaign->starttime) : get_string('campaign_window_unbounded', 'local_communications'))
+    $unbounded = get_string('campaign_window_unbounded', 'local_communications');
+    $window = get_string(
+        'campaign_window_start',
+        'local_communications',
+        $campaign->starttime ? userdate($campaign->starttime) : $unbounded
+    )
         . ' — '
-        . get_string('campaign_window_end', 'local_communications', $campaign->endtime ? userdate($campaign->endtime) : get_string('campaign_window_unbounded', 'local_communications'));
+        . get_string(
+            'campaign_window_end',
+            'local_communications',
+            $campaign->endtime ? userdate($campaign->endtime) : $unbounded
+        );
 
     $responsedisplay = !empty($campaign->maxresponses)
         ? get_string('campaign_responses_of_max', 'local_communications', (object) [
@@ -128,7 +137,9 @@ foreach ($campaigns as $campaign) {
             new moodle_url('/local/communications/manage_campaigns.php', [
                 'action' => 'toggle', 'id' => $campaign->id, 'sesskey' => sesskey(),
             ]),
-            $campaign->enabled ? get_string('campaign_disable', 'local_communications') : get_string('campaign_enable', 'local_communications')
+            $campaign->enabled
+                ? get_string('campaign_disable', 'local_communications')
+                : get_string('campaign_enable', 'local_communications')
         );
         $actions[] = $OUTPUT->action_link(
             new moodle_url('/local/communications/manage_campaigns.php', [

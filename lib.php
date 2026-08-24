@@ -22,8 +22,6 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Serves a dashboard news story's image, uploaded via the filemanager on
  * classes/form/news_form.php and stored under local_communications_news::IMAGE_FILEAREA
@@ -58,7 +56,12 @@ function local_communications_pluginfile($course, $cm, $context, $filearea, $arg
     $filepath = $args ? '/' . implode('/', $args) . '/' : '/';
 
     $file = get_file_storage()->get_file(
-        $context->id, 'local_communications', $filearea, $itemid, $filepath, $filename
+        $context->id,
+        'local_communications',
+        $filearea,
+        $itemid,
+        $filepath,
+        $filename
     );
     if (!$file || $file->is_directory()) {
         return false;

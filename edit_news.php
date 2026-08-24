@@ -72,7 +72,7 @@ if ($form->is_cancelled()) {
         $newsid = news::create($record);
     }
 
-    // file_postupdate_standard_filemanager() isn't used here - it expects the form
+    // Not using file_postupdate_standard_filemanager() here - it expects the form
     // field to be named "image_filemanager" (it reads $data->image_filemanager
     // internally), but this form's element is plain "image" to match
     // file_prepare_draft_area() being called directly below rather than via its
@@ -80,7 +80,12 @@ if ($form->is_cancelled()) {
     // draft area directly keeps both sides of the round-trip using the same field name.
     $submitted = $form->get_data();
     file_save_draft_area_files(
-        $submitted->image, $context->id, 'local_communications', news::IMAGE_FILEAREA, $newsid, $imageoptions
+        $submitted->image,
+        $context->id,
+        'local_communications',
+        news::IMAGE_FILEAREA,
+        $newsid,
+        $imageoptions
     );
 
     redirect($listurl, get_string('news_saved', 'local_communications'), null, \core\output\notification::NOTIFY_SUCCESS);

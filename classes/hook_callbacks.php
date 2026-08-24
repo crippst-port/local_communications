@@ -30,7 +30,6 @@ use local_communications\local\news;
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class hook_callbacks {
-
     /**
      * Whether the feedback widget should be shown on the current page.
      *
@@ -52,7 +51,7 @@ class hook_callbacks {
             return null;
         }
 
-        // $COURSE always resolves to a real course object - the site/front-page course
+        // The global $COURSE always resolves to a real course object - the site/front-page course
         // (id == SITEID) on pages not tied to a specific course, e.g. the dashboard or site
         // home - so a campaign can legitimately target those via its key-area checkboxes.
         // Actual page scoping is entirely campaigns::get_active_for_context()'s job below;

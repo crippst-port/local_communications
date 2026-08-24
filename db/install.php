@@ -53,7 +53,7 @@ function xmldb_local_communications_install() {
             }
         }
 
-        // import_record() inserts the given id directly rather than via the sequence,
+        // DB::import_record() inserts the given id directly rather than via the sequence,
         // so the sequence itself is now behind the highest migrated id - fix that up
         // before anything new gets inserted.
         $dbman->reset_sequence('local_communications_campaigns');

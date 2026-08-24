@@ -30,7 +30,6 @@ namespace local_communications\local;
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class categories {
-
     /** @var string[] Used if neither the campaign nor the site-wide setting have a list (e.g. straight after install). */
     protected const DEFAULTS = ['Course layout', 'Course content', 'Assessment'];
 

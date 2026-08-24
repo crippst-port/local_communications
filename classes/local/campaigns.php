@@ -16,8 +16,6 @@
 
 namespace local_communications\local;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Feedback campaigns: CRUD for the admin UI, plus the targeting/scheduling logic
  * that decides which campaign (if any) applies to a given page/user.
@@ -31,7 +29,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class campaigns {
-
     /** @var array<int, \stdClass>|null In-request cache of enabled campaigns - a fresh page load always re-reads. */
     protected static ?array $enabledcache = null;
 
@@ -177,9 +174,11 @@ class campaigns {
                 continue;
             }
 
-            if ($best === null
+            if (
+                $best === null
                 || $campaign->priority < $best->priority
-                || ($campaign->priority == $best->priority && $campaign->id < $best->id)) {
+                || ($campaign->priority == $best->priority && $campaign->id < $best->id)
+            ) {
                 $best = $campaign;
             }
         }

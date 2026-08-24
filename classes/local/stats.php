@@ -18,8 +18,6 @@ namespace local_communications\local;
 
 use local_communications\table\courses_summary_table;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Course-level (not response-level) statistics for a campaign's report.
  *
@@ -35,7 +33,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class stats {
-
     /**
      * Overall direction of travel across a campaign's most recent responses - the same
      * recent-half-vs-older-half comparison courses_summary_table computes per course,

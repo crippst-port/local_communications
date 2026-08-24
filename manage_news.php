@@ -119,7 +119,9 @@ foreach ($stories as $story) {
         new moodle_url('/local/communications/manage_news.php', [
             'action' => 'toggle', 'id' => $story->id, 'sesskey' => sesskey(),
         ]),
-        $story->enabled ? get_string('campaign_disable', 'local_communications') : get_string('campaign_enable', 'local_communications')
+        $story->enabled
+            ? get_string('campaign_disable', 'local_communications')
+            : get_string('campaign_enable', 'local_communications')
     );
     $actions[] = $OUTPUT->action_link(
         new moodle_url('/local/communications/manage_news.php', [

@@ -34,7 +34,7 @@ $id = optional_param('id', 0, PARAM_INT);
 
 admin_externalpage_setup('local_communications_campaigns');
 
-// admin_externalpage_setup() above only enforces local/communications:viewreports now (see
+// The admin_externalpage_setup() call above only enforces local/communications:viewreports now (see
 // settings.php) - authoring campaigns needs the stricter capability, checked explicitly
 // here rather than relying on that shared page id.
 require_capability('local/communications:managecampaigns', context_system::instance());

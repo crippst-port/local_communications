@@ -16,8 +16,6 @@
 
 namespace local_communications\local;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Dashboard news stories: CRUD for the admin UI, plus the targeting logic that decides
  * which stories the current user's carousel shows.
@@ -32,7 +30,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class news {
-
     /** File API: the component/filearea a story's image is stored under, keyed by the story's own id as itemid. */
     const IMAGE_FILEAREA = 'newsimage';
 
@@ -94,7 +91,10 @@ class news {
         global $DB;
 
         get_file_storage()->delete_area_files(
-            \context_system::instance()->id, 'local_communications', self::IMAGE_FILEAREA, $id
+            \context_system::instance()->id,
+            'local_communications',
+            self::IMAGE_FILEAREA,
+            $id
         );
         $DB->delete_records('local_communications_news', ['id' => $id]);
     }
@@ -166,7 +166,12 @@ class news {
         $context = \context_system::instance();
 
         $files = $fs->get_area_files(
-            $context->id, 'local_communications', self::IMAGE_FILEAREA, $story->id, 'itemid, filepath, filename', false
+            $context->id,
+            'local_communications',
+            self::IMAGE_FILEAREA,
+            $story->id,
+            'itemid, filepath, filename',
+            false
         );
         $file = reset($files);
         if (!$file) {
@@ -174,7 +179,12 @@ class news {
         }
 
         return \moodle_url::make_pluginfile_url(
-            $context->id, 'local_communications', self::IMAGE_FILEAREA, $story->id, $file->get_filepath(), $file->get_filename()
+            $context->id,
+            'local_communications',
+            self::IMAGE_FILEAREA,
+            $story->id,
+            $file->get_filepath(),
+            $file->get_filename()
         );
     }
 
