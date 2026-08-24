@@ -22,13 +22,12 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define([
-    'jquery',
     'core/templates',
     'core/modal_factory',
     'core/modal_events',
     'core/str',
     'core/notification',
-], function($, Templates, ModalFactory, ModalEvents, Str, Notification) {
+], function(Templates, ModalFactory, ModalEvents, Str, Notification) {
 
     var STRING_KEYS = [
         'sentiment_happy',
@@ -83,6 +82,27 @@ define([
     };
 
     /**
+     * POST a plain object to a Moodle ajax endpoint as form-encoded data and
+     * decode the JSON response.
+     *
+     * @param {String} url
+     * @param {Object} data
+     * @return {Promise}
+     */
+    var postForm = function(url, data) {
+        var body = new URLSearchParams();
+        Object.keys(data).forEach(function(key) {
+            body.append(key, data[key]);
+        });
+        return fetch(url, {
+            method: 'POST',
+            body: body,
+        }).then(function(response) {
+            return response.json();
+        });
+    };
+
+    /**
      * Initialise the floating feedback trigger and its modal.
      *
      * @param {Object} params
@@ -114,49 +134,55 @@ define([
             return strings;
         };
 
-        var showStep = function(root, step) {
-            root.find('[data-step]').attr('hidden', 'hidden');
-            root.find('[data-step="' + step + '"]').removeAttr('hidden');
+        var showStep = function(rootEl, step) {
+            rootEl.querySelectorAll('[data-step]').forEach(function(el) {
+                el.hidden = true;
+            });
+            rootEl.querySelectorAll('[data-step="' + step + '"]').forEach(function(el) {
+                el.hidden = false;
+            });
         };
 
-        var resetOtherInput = function(root) {
+        var resetOtherInput = function(rootEl) {
             state.categoryOther = false;
-            root.find('[data-role="category-other-wrap"]').attr('hidden', 'hidden');
-            root.find('[data-role="category-other-text"]').val('');
-            root.find('[data-action="category-other-continue"]')
-                .attr('hidden', 'hidden')
-                .prop('disabled', true);
+            rootEl.querySelector('[data-role="category-other-wrap"]').hidden = true;
+            rootEl.querySelector('[data-role="category-other-text"]').value = '';
+            var continueBtn = rootEl.querySelector('[data-action="category-other-continue"]');
+            continueBtn.hidden = true;
+            continueBtn.disabled = true;
         };
 
-        var resetForm = function(root) {
+        var resetForm = function(rootEl) {
             state.sentiment = null;
             state.category = null;
-            resetOtherInput(root);
-            root.find('[data-role="feedbacktext"]').val('');
-            root.find('[data-role="anonymous"]').prop('checked', false);
-            root.find('[data-role="error"]').attr('hidden', 'hidden').text('');
-            showStep(root, '1');
+            resetOtherInput(rootEl);
+            rootEl.querySelector('[data-role="feedbacktext"]').value = '';
+            rootEl.querySelector('[data-role="anonymous"]').checked = false;
+            var error = rootEl.querySelector('[data-role="error"]');
+            error.hidden = true;
+            error.textContent = '';
+            showStep(rootEl, '1');
         };
 
-        var populateStrings = function(root, s) {
-            root.find('[data-role="label-happy"]').text(params.labelhappy || s.sentiment_happy);
-            root.find('[data-role="label-neutral"]').text(params.labelneutral || s.sentiment_neutral);
-            root.find('[data-role="label-sad"]').text(params.labelsad || s.sentiment_sad);
-            root.find('[data-role="category-heading"]').text(s.category_heading);
-            root.find('[data-role="category-label-other"]').text(s.category_other);
-            root.find('[data-role="category-other-text"]').attr('placeholder', s.category_other_placeholder);
-            root.find('[data-action="category-back"]').text(s.back);
-            root.find('[data-action="category-skip"]').text(s.category_skip);
-            root.find('[data-action="category-other-continue"]').text(s.continue);
-            root.find('[data-role="feedbacktext"]').attr('placeholder', s.placeholder_feedback);
-            root.find('[data-role="anonymous-label"]').text(s.anonymous_label);
-            root.find('[data-action="back"]').text(s.back);
-            root.find('[data-action="submit"]').text(s.submit);
-            root.find('[data-action="close"]').text(s.close);
-            root.find('[data-role="thankyou-title"]').text(s.thankyou_title);
-            root.find('[data-role="thankyou-body"]').text(s.thankyou_body);
-            root.find('[data-role="neverask-prefix"]').text(s.neverask_prefix);
-            root.find('[data-role="neverask-linktext"]').text(s.neverask_linktext);
+        var populateStrings = function(rootEl, s) {
+            rootEl.querySelector('[data-role="label-happy"]').textContent = params.labelhappy || s.sentiment_happy;
+            rootEl.querySelector('[data-role="label-neutral"]').textContent = params.labelneutral || s.sentiment_neutral;
+            rootEl.querySelector('[data-role="label-sad"]').textContent = params.labelsad || s.sentiment_sad;
+            rootEl.querySelector('[data-role="category-heading"]').textContent = s.category_heading;
+            rootEl.querySelector('[data-role="category-label-other"]').textContent = s.category_other;
+            rootEl.querySelector('[data-role="category-other-text"]').placeholder = s.category_other_placeholder;
+            rootEl.querySelector('[data-action="category-back"]').textContent = s.back;
+            rootEl.querySelector('[data-action="category-skip"]').textContent = s.category_skip;
+            rootEl.querySelector('[data-action="category-other-continue"]').textContent = s.continue;
+            rootEl.querySelector('[data-role="feedbacktext"]').placeholder = s.placeholder_feedback;
+            rootEl.querySelector('[data-role="anonymous-label"]').textContent = s.anonymous_label;
+            rootEl.querySelector('[data-action="back"]').textContent = s.back;
+            rootEl.querySelector('[data-action="submit"]').textContent = s.submit;
+            rootEl.querySelector('[data-action="close"]').textContent = s.close;
+            rootEl.querySelector('[data-role="thankyou-title"]').textContent = s.thankyou_title;
+            rootEl.querySelector('[data-role="thankyou-body"]').textContent = s.thankyou_body;
+            rootEl.querySelector('[data-role="neverask-prefix"]').textContent = s.neverask_prefix;
+            rootEl.querySelector('[data-role="neverask-linktext"]').textContent = s.neverask_linktext;
         };
 
         var promptFor = function(sentiment, s) {
@@ -169,48 +195,50 @@ define([
             return s.prompt_neutral;
         };
 
-        var showError = function(root, message) {
-            root.find('[data-role="error"]').text(message).removeAttr('hidden');
+        var showError = function(rootEl, message) {
+            var error = rootEl.querySelector('[data-role="error"]');
+            error.textContent = message;
+            error.hidden = false;
         };
 
-        var goToComment = function(root) {
-            showStep(root, '3');
-            root.find('[data-role="feedbacktext"]').trigger('focus');
+        var goToComment = function(rootEl) {
+            showStep(rootEl, '3');
+            rootEl.querySelector('[data-role="feedbacktext"]').focus();
         };
 
-        var submitFeedback = function(root, s) {
-            var text = root.find('[data-role="feedbacktext"]').val().trim();
+        var submitFeedback = function(rootEl, s) {
+            var text = rootEl.querySelector('[data-role="feedbacktext"]').value.trim();
             if (!text) {
-                showError(root, s.error_empty);
+                showError(rootEl, s.error_empty);
                 return;
             }
 
-            var submitBtn = root.find('[data-action="submit"]');
-            submitBtn.prop('disabled', true).text(s.submitting);
-            root.find('[data-role="error"]').attr('hidden', 'hidden');
+            var submitBtn = rootEl.querySelector('[data-action="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = s.submitting;
+            rootEl.querySelector('[data-role="error"]').hidden = true;
 
             var context = buildContext(params);
             context.sentiment = state.sentiment;
             context.category = state.category || '';
             context.categoryother = state.categoryOther ? 1 : 0;
             context.feedbacktext = text;
-            context.anonymous = root.find('[data-role="anonymous"]').is(':checked') ? 1 : 0;
+            context.anonymous = rootEl.querySelector('[data-role="anonymous"]').checked ? 1 : 0;
+            context.sesskey = M.cfg.sesskey;
 
-            $.ajax({
-                url: M.cfg.wwwroot + '/local/communications/ajax/submit.php',
-                method: 'POST',
-                dataType: 'json',
-                data: $.extend({sesskey: M.cfg.sesskey}, context),
-            }).done(function(response) {
-                submitBtn.prop('disabled', false).text(s.submit);
+            postForm(M.cfg.wwwroot + '/local/communications/ajax/submit.php', context).then(function(response) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = s.submit;
                 if (response && response.success) {
-                    showStep(root, '4');
+                    showStep(rootEl, '4');
                 } else {
-                    showError(root, (response && response.error) || s.error_generic);
+                    showError(rootEl, (response && response.error) || s.error_generic);
                 }
-            }).fail(function() {
-                submitBtn.prop('disabled', false).text(s.submit);
-                showError(root, s.error_generic);
+                return response;
+            }).catch(function() {
+                submitBtn.disabled = false;
+                submitBtn.textContent = s.submit;
+                showError(rootEl, s.error_generic);
             });
         };
 
@@ -220,15 +248,18 @@ define([
                 // rather than handing ModalFactory unresolved body/footer promises: that
                 // would resolve the create() promise before the HTML actually lands in
                 // the DOM, so code populating labels/text would run against an empty root.
-                modalPromise = $.when(
+                modalPromise = Promise.all([
                     Templates.renderForPromise('local_communications/modal_body', {
                         categories: params.categories.map(function(value) {
                             return {value: value};
                         }),
                     }),
                     Templates.renderForPromise('local_communications/modal_footer', {}),
-                    getStrings()
-                ).then(function(bodyData, footerData, s) {
+                    getStrings(),
+                ]).then(function(results) {
+                    var bodyData = results[0];
+                    var footerData = results[1];
+                    var s = results[2];
                     return ModalFactory.create({
                         type: ModalFactory.types.DEFAULT,
                         title: params.campaignmodaltitle || s.modaltitle,
@@ -236,89 +267,129 @@ define([
                         footer: footerData.html,
                     }).then(function(modal) {
                         var root = modal.getRoot();
-                        populateStrings(root, s);
+                        var rootEl = root[0];
+                        populateStrings(rootEl, s);
 
                         if (params.campaignintro) {
-                            root.find('[data-role="intro"]').text(params.campaignintro).removeAttr('hidden');
+                            var intro = rootEl.querySelector('[data-role="intro"]');
+                            intro.textContent = params.campaignintro;
+                            intro.hidden = false;
                         }
 
-                        root.on('click', '[data-sentiment]', function(e) {
-                            state.sentiment = $(e.currentTarget).data('sentiment');
-                            root.find('[data-role="prompt"]').text(promptFor(state.sentiment, s));
+                        rootEl.addEventListener('click', function(e) {
+                            var target = e.target.closest('[data-sentiment]');
+                            if (!target || !rootEl.contains(target)) {
+                                return;
+                            }
+                            state.sentiment = target.dataset.sentiment;
+                            rootEl.querySelector('[data-role="prompt"]').textContent = promptFor(state.sentiment, s);
                             if (params.skiptopicstep) {
                                 state.category = null;
                                 state.categoryOther = false;
-                                goToComment(root);
+                                goToComment(rootEl);
                             } else {
-                                showStep(root, '2');
+                                showStep(rootEl, '2');
                             }
                         });
 
-                        root.on('click', '[data-category]', function(e) {
-                            state.category = $(e.currentTarget).data('category');
+                        rootEl.addEventListener('click', function(e) {
+                            var target = e.target.closest('[data-category]');
+                            if (!target || !rootEl.contains(target)) {
+                                return;
+                            }
+                            state.category = target.dataset.category;
                             state.categoryOther = false;
-                            goToComment(root);
+                            goToComment(rootEl);
                         });
 
-                        root.on('click', '[data-action="category-other"]', function() {
-                            root.find('[data-role="category-other-wrap"]').removeAttr('hidden');
-                            root.find('[data-action="category-other-continue"]').removeAttr('hidden');
-                            root.find('[data-role="category-other-text"]').trigger('focus');
+                        rootEl.addEventListener('click', function(e) {
+                            if (!e.target.closest('[data-action="category-other"]')) {
+                                return;
+                            }
+                            rootEl.querySelector('[data-role="category-other-wrap"]').hidden = false;
+                            rootEl.querySelector('[data-action="category-other-continue"]').hidden = false;
+                            rootEl.querySelector('[data-role="category-other-text"]').focus();
                         });
 
-                        root.on('input', '[data-role="category-other-text"]', function(e) {
-                            var hastext = $(e.currentTarget).val().trim().length > 0;
-                            root.find('[data-action="category-other-continue"]').prop('disabled', !hastext);
+                        rootEl.addEventListener('input', function(e) {
+                            if (!e.target.closest('[data-role="category-other-text"]')) {
+                                return;
+                            }
+                            var hastext = e.target.value.trim().length > 0;
+                            rootEl.querySelector('[data-action="category-other-continue"]').disabled = !hastext;
                         });
 
-                        root.on('click', '[data-action="category-other-continue"]', function() {
-                            var text = root.find('[data-role="category-other-text"]').val().trim();
+                        rootEl.addEventListener('click', function(e) {
+                            if (!e.target.closest('[data-action="category-other-continue"]')) {
+                                return;
+                            }
+                            var text = rootEl.querySelector('[data-role="category-other-text"]').value.trim();
                             if (!text) {
                                 return;
                             }
                             state.category = text;
                             state.categoryOther = true;
-                            goToComment(root);
+                            goToComment(rootEl);
                         });
 
-                        root.on('click', '[data-action="category-skip"]', function() {
+                        rootEl.addEventListener('click', function(e) {
+                            if (!e.target.closest('[data-action="category-skip"]')) {
+                                return;
+                            }
                             state.category = null;
                             state.categoryOther = false;
-                            goToComment(root);
+                            goToComment(rootEl);
                         });
 
-                        root.on('click', '[data-action="category-back"]', function() {
-                            showStep(root, '1');
+                        rootEl.addEventListener('click', function(e) {
+                            if (!e.target.closest('[data-action="category-back"]')) {
+                                return;
+                            }
+                            showStep(rootEl, '1');
                         });
 
-                        root.on('click', '[data-action="back"]', function() {
-                            showStep(root, params.skiptopicstep ? '1' : '2');
+                        rootEl.addEventListener('click', function(e) {
+                            if (!e.target.closest('[data-action="back"]')) {
+                                return;
+                            }
+                            showStep(rootEl, params.skiptopicstep ? '1' : '2');
                         });
 
-                        root.on('click', '[data-action="submit"]', function() {
-                            submitFeedback(root, s);
+                        rootEl.addEventListener('click', function(e) {
+                            if (!e.target.closest('[data-action="submit"]')) {
+                                return;
+                            }
+                            submitFeedback(rootEl, s);
                         });
 
-                        root.on('click', '[data-action="close"]', function() {
+                        rootEl.addEventListener('click', function(e) {
+                            if (!e.target.closest('[data-action="close"]')) {
+                                return;
+                            }
                             modal.hide();
                         });
 
-                        root.on('click', '[data-action="neverask"]', function() {
+                        rootEl.addEventListener('click', function(e) {
+                            if (!e.target.closest('[data-action="neverask"]')) {
+                                return;
+                            }
                             if (wrap) {
                                 wrap.hidden = true;
                             }
                             modal.hide();
-                            $.ajax({
-                                url: M.cfg.wwwroot + '/local/communications/ajax/neverask.php',
-                                method: 'POST',
-                                dataType: 'json',
-                                data: {sesskey: M.cfg.sesskey, campaignid: params.campaignid},
-                            }).fail(Notification.exception);
+                            postForm(M.cfg.wwwroot + '/local/communications/ajax/neverask.php', {
+                                sesskey: M.cfg.sesskey,
+                                campaignid: params.campaignid,
+                            }).catch(Notification.exception);
                         });
 
+                        // ModalEvents are fired via the modal root's jQuery-based event
+                        // bus (see core/modal), so this listener stays on the jQuery
+                        // wrapper rather than the native element - the same pattern core
+                        // itself uses (e.g. lib/amd/src/tag.js).
                         root.on(ModalEvents.hidden, function() {
                             trigger.setAttribute('aria-expanded', 'false');
-                            resetForm(root);
+                            resetForm(rootEl);
                         });
 
                         return modal;
