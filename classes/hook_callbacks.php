@@ -118,6 +118,12 @@ class hook_callbacks {
      * only ever shows when at least one does. Empty on any page other than the
      * dashboard itself; placement is fixed, unlike campaigns' page targeting.
      *
+     * Pagetype alone can't tell the dashboard apart from "My courses" - my/courses.php
+     * sets the exact same pagetype ('my-index') as my/index.php, only its pagelayout
+     * ('mycourses' vs 'mydashboard') differs. Pagelayout alone isn't unique either -
+     * message/index.php also uses 'mydashboard'. Only the combination of both
+     * identifies the dashboard specifically.
+     *
      * @return \stdClass[]
      */
     protected static function get_dashboard_news(): array {
@@ -127,7 +133,7 @@ class hook_callbacks {
             return [];
         }
 
-        if ((string) $PAGE->pagetype !== 'my-index') {
+        if ((string) $PAGE->pagetype !== 'my-index' || (string) $PAGE->pagelayout !== 'mydashboard') {
             return [];
         }
 
