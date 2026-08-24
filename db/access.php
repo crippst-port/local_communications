@@ -55,4 +55,15 @@ $capabilities = [
             'manager' => CAP_ALLOW,
         ],
     ],
+
+    // Allows a user to create/edit/delete dashboard news stories. Deliberately separate
+    // from local/communications:managecampaigns - the two are managed on their own
+    // settings pages and a site may want different people authoring each.
+    'local/communications:managenews' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 ];

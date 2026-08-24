@@ -60,6 +60,200 @@
     }
 }
 
+/*
+ * Dashboard news carousel. Deliberately no positioning here (fixed/sticky/etc.) - it
+ * renders as a normal block in the page flow, wherever local_communications/news_carousel.js
+ * places it (see that module for why/where). Margin + rounded corners make it read as
+ * a distinct block among the dashboard's other content, rather than a full-bleed banner.
+ */
+.local-communications__news-carousel {
+    margin: 0 0 1.5rem;
+    overflow: hidden;
+    /* Matches this theme's $card-border-radius (4px), so the carousel reads as one of
+       the dashboard's own cards rather than a differently-rounded block dropped in. */
+    border-radius: .25rem;
+    background: #10182b;
+    color: #fff;
+    box-shadow: 0 .25rem 1rem rgba(0, 0, 0, .12);
+}
+
+.local-communications__news-track {
+    position: relative;
+    height: 14rem;
+    overflow: hidden;
+}
+
+.local-communications__news-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .5s ease;
+    pointer-events: none;
+}
+
+.local-communications__news-slide--active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/*
+ * The image/text pair lays out the same whether or not the slide has a link - when it
+ * does, they're nested one level deeper inside .local-communications__news-slidelink
+ * (the <a>) instead of being direct children of the slide, so both selectors share this
+ * rule rather than only the slide itself.
+ */
+.local-communications__news-slide,
+.local-communications__news-slidelink {
+    display: flex;
+    align-items: stretch;
+    height: 100%;
+}
+
+.local-communications__news-slidelink {
+    flex: 1;
+    color: inherit;
+    text-decoration: none;
+}
+
+.local-communications__news-slidelink:hover,
+.local-communications__news-slidelink:focus {
+    color: inherit;
+    text-decoration: none;
+    outline-offset: -2px;
+}
+
+.local-communications__news-image {
+    flex: 0 0 auto;
+    width: 14rem;
+    height: 100%;
+    object-fit: cover;
+}
+
+.local-communications__news-text {
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: center;
+    gap: .5rem;
+    padding: 1.25rem 1.75rem;
+    min-width: 0;
+}
+
+.local-communications__news-headline {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.local-communications__news-description {
+    margin: 0;
+    max-width: 48rem;
+    color: rgba(255, 255, 255, .8);
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+/*
+ * Prev/play-pause/dots/next all share one compact bar, rather than the dots floating
+ * alone in a wide padded strip - which at typical story counts (2-4) reads as mostly
+ * empty space under the image instead of a deliberate control bar. A solid colour of
+ * its own (rather than a translucent overlay on the slide background) makes it read as
+ * a distinct control bar, not an abrupt cut at the bottom of whatever's showing above it.
+ */
+.local-communications__news-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: .75rem;
+    padding: .4rem .6rem;
+    background: #1c2743;
+}
+
+.local-communications__news-navbtn,
+.local-communications__news-playpause {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: rgba(255, 255, 255, .8);
+    cursor: pointer;
+}
+
+/* Moodle's core .icon class carries a right margin meant for icon-then-text pairs -
+   wrong here, since these buttons are icon-only, and it visibly throws the icon off
+   centre within the round hover/focus highlight above. */
+.local-communications__news-navbtn .icon,
+.local-communications__news-playpause .icon {
+    margin: 0;
+}
+
+.local-communications__news-navbtn:hover,
+.local-communications__news-navbtn:focus,
+.local-communications__news-playpause:hover,
+.local-communications__news-playpause:focus {
+    background: rgba(255, 255, 255, .15);
+    color: #fff;
+    outline: none;
+}
+
+.local-communications__news-dots {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.local-communications__news-dot {
+    width: .55rem;
+    height: .55rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .35);
+    cursor: pointer;
+}
+
+.local-communications__news-dot:hover,
+.local-communications__news-dot:focus {
+    background: rgba(255, 255, 255, .6);
+    outline: none;
+}
+
+.local-communications__news-dot--active {
+    background: #fff;
+}
+
+@media (max-width: 576px) {
+    .local-communications__news-track {
+        height: 20rem;
+    }
+
+    .local-communications__news-slide,
+    .local-communications__news-slidelink {
+        flex-direction: column;
+    }
+
+    .local-communications__news-image {
+        width: 100%;
+        height: 9rem;
+    }
+}
+
+/* Manage news admin list. */
+.local-communications__news-thumbnail {
+    width: 4rem;
+    height: 4rem;
+    object-fit: cover;
+    border-radius: .25rem;
+}
+
 /* Modal contents. */
 .local-communications__modal {
     display: flex;

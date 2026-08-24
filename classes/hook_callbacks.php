@@ -18,7 +18,9 @@ namespace local_communications;
 
 use core\hook\output\before_footer_html_generation;
 use core\hook\output\before_standard_head_html_generation;
+use core\hook\output\before_standard_top_of_body_html_generation;
 use local_communications\local\campaigns;
+use local_communications\local\news;
 
 /**
  * Hook callback handlers for local_communications.
@@ -113,15 +115,42 @@ class hook_callbacks {
     }
 
     /**
-     * Registers the widget's CSS. Must happen before <head> is printed, so this
-     * cannot be done from the before_footer_html_generation hook below.
+     * The dashboard news stories, if any, that apply to the current user - the carousel
+     * only ever shows when at least one does. Empty on any page other than the
+     * dashboard itself; placement is fixed, unlike campaigns' page targeting.
+     *
+     * @return \stdClass[]
+     */
+    protected static function get_dashboard_news(): array {
+        global $PAGE, $USER;
+
+        if (!get_config('local_communications', 'newsenabled')) {
+            return [];
+        }
+
+        if ((string) $PAGE->pagetype !== 'my-index') {
+            return [];
+        }
+
+        if (!isloggedin() || isguestuser()) {
+            return [];
+        }
+
+        return news::get_active_list($USER);
+    }
+
+    /**
+     * Registers the widget's/carousel's CSS. Must happen before <head> is printed, so
+     * this cannot be done from the before_footer_html_generation or
+     * before_standard_top_of_body_html_generation hooks below - by the time either of
+     * those fires, <head> has already been output.
      *
      * @param before_standard_head_html_generation $hook
      */
     public static function before_standard_head_html_generation(before_standard_head_html_generation $hook): void {
         global $PAGE;
 
-        if (!self::get_matching_campaign()) {
+        if (!self::get_matching_campaign() && !self::get_dashboard_news()) {
             return;
         }
 
@@ -197,5 +226,69 @@ class hook_callbacks {
         $hook->add_html($html);
 
         $PAGE->requires->js_call_amd('local_communications/app', 'init', [$params]);
+    }
+
+    /**
+     * Renders the dashboard news carousel right after <body> - theme-agnostic, unlike
+     * targeting a specific theme's markup, but that puts it above the theme's own
+     * header, which on a theme with a fixed/sticky header leaves it partially hidden
+     * behind that header rather than sitting in the page as a proper block.
+     * local_communications/news_carousel relocates it client-side to right before
+     * #page-content when present (Boost and Boost-derived themes), falling back to
+     * staying right here - still fully working - on any theme without it, rather than
+     * this method guessing at theme-specific markup itself. Rendered server-side as
+     * plain markup either way, so the first story is visible even if JS fails to load;
+     * the module only handles relocation and the timer/dot rotation on top of what's
+     * already in the DOM.
+     *
+     * @param before_standard_top_of_body_html_generation $hook
+     */
+    public static function before_standard_top_of_body_html_generation(before_standard_top_of_body_html_generation $hook): void {
+        global $PAGE, $OUTPUT;
+
+        $stories = self::get_dashboard_news();
+        if (!$stories) {
+            return;
+        }
+
+        $count = count($stories);
+        $slides = [];
+        foreach (array_values($stories) as $index => $story) {
+            $imageurl = news::image_url($story);
+            $linkurl = trim((string) $story->linkurl);
+
+            $slides[] = [
+                'index' => $index,
+                'active' => $index === 0,
+                'imageurl' => $imageurl ? $imageurl->out(false) : null,
+                'title' => format_string($story->title),
+                'description' => format_text($story->description ?? '', FORMAT_PLAIN),
+                'linkurl' => $linkurl !== '' ? $linkurl : null,
+                'dotaria' => get_string('news_dotaria', 'local_communications', (object) [
+                    'index' => $index + 1, 'count' => $count,
+                ]),
+            ];
+        }
+
+        $html = $OUTPUT->render_from_template('local_communications/news_carousel', [
+            'stories' => $slides,
+            'hasmultiple' => $count > 1,
+            'carousellabel' => get_string('news_carousellabel', 'local_communications'),
+            'prevlabel' => get_string('news_prev', 'local_communications'),
+            'nextlabel' => get_string('news_next', 'local_communications'),
+            'pauselabel' => get_string('news_pause', 'local_communications'),
+            'playlabel' => get_string('news_play', 'local_communications'),
+        ]);
+        $hook->add_html($html);
+
+        // At least 1 second regardless of what's stored - a 0 or negative interval
+        // would otherwise spin the carousel as fast as setInterval() can fire.
+        $intervalseconds = max(1, (int) get_config('local_communications', 'newsinterval'));
+
+        // CSS is requested from before_standard_head_html_generation above, not here -
+        // by the time this hook fires, <head> has already been output.
+        $PAGE->requires->js_call_amd('local_communications/news_carousel', 'init', [
+            ['intervalms' => $intervalseconds * 1000],
+        ]);
     }
 }

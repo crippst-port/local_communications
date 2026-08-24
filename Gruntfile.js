@@ -1,9 +1,9 @@
 module.exports = function(grunt) {
     'use strict';
 
-    // This plugin's AMD source (amd/src/app.js) is plain ES5 - no classes, arrow
+    // This plugin's AMD sources (amd/src/*.js) are plain ES5 - no classes, arrow
     // functions or modules syntax - so unlike aiplacement_modgen's Gruntfile, there is
-    // no Babel transpilation step here: uglify runs directly against the source.
+    // no Babel transpilation step here: uglify runs directly against each source file.
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
 
@@ -29,9 +29,13 @@ module.exports = function(grunt) {
                 }
             },
             dist: {
-                files: {
-                    'amd/build/app.min.js': ['amd/src/app.js']
-                }
+                files: [{
+                    expand: true,
+                    cwd: 'amd/src',
+                    src: ['*.js'],
+                    dest: 'amd/build',
+                    ext: '.min.js'
+                }]
             }
         },
 

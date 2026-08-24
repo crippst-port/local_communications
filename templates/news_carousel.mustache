@@ -1,0 +1,89 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_communications/news_carousel
+
+    The dashboard news carousel - rendered as plain markup with the first slide already
+    visible, so it works even before local_communications/news_carousel.js runs; that
+    module only adds the timer-driven rotation and dot-click handling on top of this.
+
+    Context variables:
+    * stories - array of {index, active, imageurl, title, description, linkurl, dotaria}
+    * hasmultiple - whether there's more than one story (nav/dots are pointless with just one)
+    * carousellabel - accessible label for the carousel region
+    * prevlabel / nextlabel - accessible labels for the prev/next buttons
+    * pauselabel / playlabel - accessible label for the play/pause button in each state -
+      local_communications/news_carousel.js swaps between them (and the initial
+      aria-label/icon below) as playback is toggled
+}}
+<div
+    class="local-communications__news-carousel"
+    id="local-communications-news-carousel"
+    role="region"
+    aria-roledescription="carousel"
+    aria-label="{{carousellabel}}"
+>
+    <div class="local-communications__news-track" aria-live="off">
+        {{#stories}}
+        <div class="local-communications__news-slide{{#active}} local-communications__news-slide--active{{/active}}" data-index="{{index}}">
+            {{#linkurl}}<a class="local-communications__news-slidelink" href="{{linkurl}}">{{/linkurl}}
+                {{#imageurl}}<img class="local-communications__news-image" src="{{imageurl}}" alt="" loading="lazy">{{/imageurl}}
+                <div class="local-communications__news-text">
+                    <p class="local-communications__news-headline">{{{title}}}</p>
+                    {{#description}}<p class="local-communications__news-description">{{{description}}}</p>{{/description}}
+                </div>
+            {{#linkurl}}</a>{{/linkurl}}
+        </div>
+        {{/stories}}
+    </div>
+    {{#hasmultiple}}
+    <div class="local-communications__news-controls">
+        <button
+            type="button"
+            class="local-communications__news-navbtn"
+            data-action="prev"
+            aria-label="{{prevlabel}}"
+        ><i class="icon fa fa-chevron-left fa-fw" aria-hidden="true"></i></button>
+        <button
+            type="button"
+            class="local-communications__news-playpause"
+            data-action="playpause"
+            data-pauselabel="{{pauselabel}}"
+            data-playlabel="{{playlabel}}"
+            aria-pressed="false"
+            aria-label="{{pauselabel}}"
+        ><i class="icon fa fa-pause fa-fw" data-role="playpause-icon" aria-hidden="true"></i></button>
+        <div class="local-communications__news-dots">
+            {{#stories}}
+            <button
+                type="button"
+                class="local-communications__news-dot{{#active}} local-communications__news-dot--active{{/active}}"
+                data-index="{{index}}"
+                aria-label="{{dotaria}}"
+                {{#active}}aria-current="true"{{/active}}
+            ></button>
+            {{/stories}}
+        </div>
+        <button
+            type="button"
+            class="local-communications__news-navbtn"
+            data-action="next"
+            aria-label="{{nextlabel}}"
+        ><i class="icon fa fa-chevron-right fa-fw" aria-hidden="true"></i></button>
+    </div>
+    {{/hasmultiple}}
+</div>

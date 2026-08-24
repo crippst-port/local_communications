@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_communications';
-$plugin->release = '1.0.0';
-$plugin->version = 2026082401;
+$plugin->release = '1.2.0';
+$plugin->version = 2026082403;
 $plugin->requires = 2024100708;
 $plugin->maturity = MATURITY_ALPHA;

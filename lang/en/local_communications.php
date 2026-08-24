@@ -40,6 +40,11 @@ $string['categories_setting'] = 'Feedback areas';
 $string['categories_setting_desc'] = 'The default areas students can optionally tag their feedback with, one per line, shown as buttons in the feedback widget alongside an "Other" option for free text. This is a fallback: any campaign can set its own list under Feedback campaigns, which is used instead whenever a campaign has one.';
 $string['trendwindow_setting'] = 'Trend window';
 $string['trendwindow_setting_desc'] = 'How many of a course\'s most recent responses to take into account when working out its trend arrow, split into two equal halves (newest half vs the half before that). Courses with fewer responses than this show no trend arrow. Must be at least 2.';
+$string['newssettings_heading'] = 'News settings';
+$string['newsenabled_setting'] = 'Enable news carousel';
+$string['newsenabled_setting_desc'] = 'Show the news carousel on the dashboard when there are stories to show.';
+$string['newsinterval_setting'] = 'Carousel rotation time';
+$string['newsinterval_setting_desc'] = 'How long each story shows on the dashboard carousel before it automatically advances to the next one, in seconds. Must be at least 1.';
 
 // Campaigns.
 $string['defaultcampaignname'] = 'Default';
@@ -125,6 +130,32 @@ $string['targetsummary_pages'] = 'Pages: {$a}';
 $string['targetsummary_roles'] = 'Roles: {$a}';
 $string['targetsummary_cohort'] = 'Cohort: {$a}';
 $string['targetsummary_users'] = '{$a} specific user(s)';
+
+// Dashboard news.
+$string['managenews'] = 'Dashboard news';
+$string['managenews_intro'] = 'News stories appear as a carousel at the top of the dashboard. A story with no targeting set shows to everyone - add targeting to scope it down.';
+$string['news_create'] = 'Create story';
+$string['news_edit'] = 'Edit story: {$a}';
+$string['news_saved'] = 'Story saved.';
+$string['news_none'] = 'No news stories yet.';
+$string['news_title'] = 'Headline';
+$string['news_description'] = 'Short description';
+$string['news_description_help'] = 'Shown under the headline in the carousel slide. Keep it brief - long descriptions are clipped.';
+$string['news_image'] = 'Image';
+$string['news_image_help'] = 'Shown alongside the headline in the carousel slide. Optional, but a story with no image still shows its headline and description.';
+$string['news_link'] = 'Link';
+$string['news_link_help'] = 'Where the slide goes when clicked. Leave empty for a slide that isn\'t clickable.';
+$string['news_enabled'] = 'Enabled';
+$string['news_sortorder'] = 'Sort order';
+$string['news_sortorder_help'] = 'Stories appear in the carousel lowest number first. Stories sharing the same number fall back to whichever was created first.';
+$string['news_confirmdelete'] = 'Delete story "{$a}"? This cannot be undone.';
+$string['news_dotaria'] = 'Show story {$a->index} of {$a->count}';
+$string['news_targetsummary_everyone'] = 'Everyone';
+$string['news_carousellabel'] = 'News';
+$string['news_prev'] = 'Previous story';
+$string['news_next'] = 'Next story';
+$string['news_pause'] = 'Pause carousel';
+$string['news_play'] = 'Play carousel';
 
 // Widget / trigger.
 $string['triggerlabel'] = 'Feedback';

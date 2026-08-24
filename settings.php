@@ -26,17 +26,32 @@
 defined('MOODLE_INTERNAL') || die();
 
 // Registered unconditionally (like core report plugins) so that anyone holding
-// local/communications:viewreports can reach it, not only users with moodle/site:config.
-// Every report is scoped to one campaign now - manage_campaigns.php (its list of
-// campaigns, each linking to its own dashboard) is the front door for that, so this is
-// the only page registered here; there's no pooled "every campaign" report any more.
-// manage_campaigns.php itself further restricts the create/edit/toggle/delete actions
-// to local/communications:managecampaigns internally - this capability only gates viewing.
-$ADMIN->add('reports', new admin_externalpage(
+// local/communications:viewreports can reach it, not only users with moodle/site:config -
+// admin_externalpage's own capability parameter enforces that regardless of which
+// settings-tree category it's filed under. Every report is scoped to one campaign now -
+// manage_campaigns.php (its list of campaigns, each linking to its own dashboard) is the
+// front door for that, so this is the only page registered here; there's no pooled
+// "every campaign" report any more. manage_campaigns.php itself further restricts the
+// create/edit/toggle/delete actions to local/communications:managecampaigns internally -
+// this capability only gates viewing. Filed under localplugins, alongside the dashboard
+// news page below, rather than reports - both are this plugin's two content-management
+// areas and read better sitting together than split across categories.
+$ADMIN->add('localplugins', new admin_externalpage(
     'local_communications_campaigns',
     get_string('managecampaigns', 'local_communications'),
     new moodle_url('/local/communications/manage_campaigns.php'),
     'local/communications:viewreports'
+));
+
+// Dashboard news has its own capability and its own settings-tree entry, deliberately
+// separate from the campaigns page above - a site may want different people authoring
+// each. There's no separate "view" capability here to justify a broader landing page
+// the way campaigns has: managenews gates the whole thing, viewing and authoring alike.
+$ADMIN->add('localplugins', new admin_externalpage(
+    'local_communications_news',
+    get_string('managenews', 'local_communications'),
+    new moodle_url('/local/communications/manage_news.php'),
+    'local/communications:managenews'
 ));
 
 if ($hassiteconfig) {
@@ -45,6 +60,12 @@ if ($hassiteconfig) {
 
     $settings = new admin_settingpage('local_communications', get_string('pluginname', 'local_communications'));
     $ADMIN->add('localplugins', $settings);
+
+    $settings->add(new admin_setting_heading(
+        'local_communications/feedbacksettingsheading',
+        get_string('settings_heading', 'local_communications'),
+        ''
+    ));
 
     $settings->add(new admin_setting_configcheckbox(
         'local_communications/enabled',
@@ -67,5 +88,27 @@ if ($hassiteconfig) {
         get_string('categories_setting', 'local_communications'),
         get_string('categories_setting_desc', 'local_communications'),
         \local_communications\local\categories::get_default_setting_value()
+    ));
+
+    $settings->add(new admin_setting_heading(
+        'local_communications/newssettingsheading',
+        get_string('newssettings_heading', 'local_communications'),
+        ''
+    ));
+
+    $settings->add(new admin_setting_configcheckbox(
+        'local_communications/newsenabled',
+        get_string('newsenabled_setting', 'local_communications'),
+        get_string('newsenabled_setting_desc', 'local_communications'),
+        1
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'local_communications/newsinterval',
+        get_string('newsinterval_setting', 'local_communications'),
+        get_string('newsinterval_setting_desc', 'local_communications'),
+        6,
+        PARAM_INT,
+        3
     ));
 }

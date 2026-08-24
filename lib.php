@@ -25,6 +25,49 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
+ * Serves a dashboard news story's image, uploaded via the filemanager on
+ * classes/form/news_form.php and stored under local_communications_news::IMAGE_FILEAREA
+ * keyed by the story's own id. Public to any logged-in user (require_login() only, no
+ * capability check) - who actually sees a story is controlled by
+ * \local_communications\local\news::get_active_list()'s targeting, not by file
+ * permissions, the same as the campaign widget itself has no per-viewer capability gate.
+ *
+ * @param stdClass $course
+ * @param stdClass|null $cm
+ * @param context $context
+ * @param string $filearea
+ * @param array $args
+ * @param bool $forcedownload
+ * @param array $options
+ * @return bool
+ */
+function local_communications_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
+    if ($context->contextlevel != CONTEXT_SYSTEM) {
+        return false;
+    }
+
+    require_once(__DIR__ . '/classes/local/news.php');
+    if ($filearea !== \local_communications\local\news::IMAGE_FILEAREA) {
+        return false;
+    }
+
+    require_login();
+
+    $itemid = array_shift($args);
+    $filename = array_pop($args);
+    $filepath = $args ? '/' . implode('/', $args) . '/' : '/';
+
+    $file = get_file_storage()->get_file(
+        $context->id, 'local_communications', $filearea, $itemid, $filepath, $filename
+    );
+    if (!$file || $file->is_directory()) {
+        return false;
+    }
+
+    send_stored_file($file, null, 0, $forcedownload, $options);
+}
+
+/**
  * Adds a link to this course's feedback report(s) to the course's navigation (its
  * Reports menu/dropdown) - but only when at least one course-focused campaign
  * ({@see \local_communications\local\campaigns::get_course_focused_for_course()}) is
