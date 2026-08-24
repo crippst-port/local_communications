@@ -23,11 +23,11 @@
  */
 define([
     'core/templates',
-    'core/modal_factory',
+    'core/modal',
     'core/modal_events',
     'core/str',
     'core/notification',
-], function(Templates, ModalFactory, ModalEvents, Str, Notification) {
+], function(Templates, Modal, ModalEvents, Str, Notification) {
 
     var STRING_KEYS = [
         'sentiment_happy',
@@ -102,6 +102,68 @@ define([
         });
     };
 
+    var INTRO_SEEN_PREFIX = 'local_communications_seen_';
+
+    /**
+     * Whether the one-off attraction animation has already played for this
+     * campaign in this browser. Storage errors (private browsing, quota) are
+     * treated as "seen" so a broken storage never replays the animation on
+     * every page load.
+     *
+     * @param {Number} campaignid
+     * @return {Boolean}
+     */
+    var hasSeenIntro = function(campaignid) {
+        try {
+            return window.localStorage.getItem(INTRO_SEEN_PREFIX + campaignid) === '1';
+        } catch (e) {
+            return true;
+        }
+    };
+
+    /**
+     * @param {Number} campaignid
+     */
+    var markIntroSeen = function(campaignid) {
+        try {
+            window.localStorage.setItem(INTRO_SEEN_PREFIX + campaignid, '1');
+        } catch (e) {
+            // Nothing we can do if storage is unavailable - the animation may replay.
+        }
+    };
+
+    /**
+     * Plays the icon grow-in attraction animation the first time this campaign's
+     * floating button is shown to this browser, then settles it back to its normal
+     * styling. Purely a client-side nudge - not worth a server round trip.
+     *
+     * @param {Element} wrapEl
+     * @param {Number} campaignid
+     */
+    var playIntroAnimation = function(wrapEl, campaignid) {
+        if (!wrapEl || !campaignid || hasSeenIntro(campaignid)) {
+            return;
+        }
+        markIntroSeen(campaignid);
+
+        var fab = wrapEl.querySelector('.local-communications__fab');
+        var settle = function() {
+            wrapEl.classList.remove('local-communications__fab-wrap--intro');
+            fab.removeEventListener('animationend', onAnimationEnd);
+            window.clearTimeout(fallback);
+        };
+        var onAnimationEnd = function(e) {
+            if (e.animationName === 'local-communications-grow-in') {
+                settle();
+            }
+        };
+        // Safety net in case animationend never fires, e.g. the tab was backgrounded.
+        var fallback = window.setTimeout(settle, 2000);
+
+        fab.addEventListener('animationend', onAnimationEnd);
+        wrapEl.classList.add('local-communications__fab-wrap--intro');
+    };
+
     /**
      * Initialise the floating feedback trigger and its modal.
      *
@@ -114,6 +176,8 @@ define([
             return;
         }
         trigger.dataset.feedbackBound = '1';
+
+        playIntroAnimation(wrap, params.campaignid);
 
         var strings = null;
         var modalPromise = null;
@@ -245,7 +309,7 @@ define([
         var getModal = function() {
             if (!modalPromise) {
                 // Render both templates and fetch strings *before* creating the modal,
-                // rather than handing ModalFactory unresolved body/footer promises: that
+                // rather than handing Modal.create() unresolved body/footer promises: that
                 // would resolve the create() promise before the HTML actually lands in
                 // the DOM, so code populating labels/text would run against an empty root.
                 modalPromise = Promise.all([
@@ -260,8 +324,7 @@ define([
                     var bodyData = results[0];
                     var footerData = results[1];
                     var s = results[2];
-                    return ModalFactory.create({
-                        type: ModalFactory.types.DEFAULT,
+                    return Modal.create({
                         title: params.campaignmodaltitle || s.modaltitle,
                         body: bodyData.html,
                         footer: footerData.html,

@@ -30,8 +30,34 @@
 }
 
 .local-communications__fab-icon {
+    display: inline-block;
     font-size: 1.1rem;
     line-height: 1;
+}
+
+/*
+ * First-time attraction animation: local_communications/app.js adds
+ * --intro to the wrap once per campaign (tracked in localStorage) and
+ * removes it again once it's played, settling the icon back to its
+ * normal styling above.
+ */
+.local-communications__fab-wrap--intro .local-communications__fab-icon {
+    animation: local-communications-grow-in .5s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+@keyframes local-communications-grow-in {
+    from {
+        transform: scale(0);
+    }
+    to {
+        transform: scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .local-communications__fab-wrap--intro .local-communications__fab-icon {
+        animation: none;
+    }
 }
 
 /* Modal contents. */
